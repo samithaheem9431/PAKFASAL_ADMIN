@@ -1,0 +1,17 @@
+{
+  "name": "admin-pakfasal",
+  "version": "1.0.0",
+  "description": "Admin web app for PakFasal (marketplace + learning). The **Flutter app** continues to read Firestore directly for public data; **all admin mutations** go through the Node API using the Firebase Admin SDK.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n BACKEND,FRONTEND -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

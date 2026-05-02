@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* Mesh gradient helper — vivid modern backgrounds (uigradients-style) */
+@layer components {
+  .mesh-bg {
+    @apply pointer-events-none fixed inset-0 -z-10 overflow-hidden;
+  }
+  .mesh-bg__layer {
+    @apply absolute rounded-full opacity-[0.65] blur-3xl mix-blend-multiply;
+  }
+}
+
+[dir="rtl"] .font-en {
+  direction: ltr;
+  text-align: right;
+}
