@@ -15,43 +15,26 @@ import { MeshGradient } from "./MeshGradient.jsx";
 import { Spinner } from "./Spinner.jsx";
 
 const nav = [
-  { to: "/", label: "Dashboard", labelUr: "ڈیش بورڈ", icon: LayoutDashboard },
-  { to: "/products", label: "Products", labelUr: "مصنوعات", icon: Package },
-  {
-    to: "/learning",
-    label: "Learning",
-    labelUr: "لرننگ",
-    icon: BookOpen,
-  },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/products", label: "Products", icon: Package },
+  { to: "/learning", label: "Learning", icon: BookOpen },
   {
     to: "/crops-diseases",
     label: "Crops & Diseases",
-    labelUr: "فصلیں و بیماریاں",
     icon: Sprout,
   },
 ];
 
 export function Layout() {
   const { user, adminProfile, logout } = useAuth();
-  const [rtl, setRtl] = useState(
-    () => localStorage.getItem("pakfasal-rtl") === "1"
-  );
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = localStorage.getItem("pakfasal-rtl") === "1";
-    document.documentElement.dir = saved ? "rtl" : "ltr";
-    document.documentElement.lang = saved ? "ur" : "en";
+    document.documentElement.dir = "ltr";
+    document.documentElement.lang = "en";
+    localStorage.removeItem("pakfasal-rtl");
   }, []);
-
-  const toggleRtl = () => {
-    const next = !rtl;
-    setRtl(next);
-    localStorage.setItem("pakfasal-rtl", next ? "1" : "0");
-    document.documentElement.dir = next ? "rtl" : "ltr";
-    document.documentElement.lang = next ? "ur" : "en";
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -89,36 +72,27 @@ export function Layout() {
           </button>
         </div>
         <nav className="flex flex-col gap-1.5 p-3">
-          {nav.map(({ to, label, labelUr, icon: Icon }) => (
+          {nav.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
               <Icon className="h-5 w-5 shrink-0" />
-              <span>
-                {rtl ? labelUr : label}
-              </span>
+              <span>{label}</span>
             </NavLink>
           ))}
           {adminProfile?.role === "super_admin" && (
             <NavLink to="/admins" className={linkClass}>
               <ShieldCheck className="h-5 w-5 shrink-0" />
-              <span>{rtl ? "ایڈمنز" : "Admins"}</span>
+              <span>Admins</span>
             </NavLink>
           )}
         </nav>
         <div className="absolute bottom-0 left-0 right-0 border-t border-emerald-100/60 bg-white/50 p-3 backdrop-blur-sm">
           <button
             type="button"
-            onClick={toggleRtl}
-            className="mb-2 w-full rounded-xl border border-white/60 bg-white/60 px-3 py-2 text-left text-xs text-slate-600 shadow-sm backdrop-blur-sm hover:bg-white/90"
-          >
-            {rtl ? "English LTR" : "اردو RTL"}
-          </button>
-          <button
-            type="button"
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50/90"
           >
             <LogOut className="h-5 w-5" />
-            {rtl ? "لاگ آؤٹ" : "Logout"}
+            Logout
           </button>
           <p className="mt-2 truncate px-1 text-xs text-slate-400">
             {user?.email}
