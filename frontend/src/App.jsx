@@ -56,7 +56,17 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster position="top-center" />
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            duration: 4000,
+            className:
+              "!text-sm !max-w-[min(calc(100vw-1.5rem),24rem)] sm:!text-base",
+            style: {
+              wordBreak: "break-word",
+            },
+          }}
+        />
         <RouteTracker />
         <Routes>
           <Route

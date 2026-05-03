@@ -57,8 +57,8 @@ export function Dashboard() {
   ];
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+    <div className="w-full min-w-0 max-w-full">
+      <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Dashboard</h1>
       <p className="mt-1 text-slate-600">
         Welcome to PakFasal administration.
       </p>
@@ -69,12 +69,12 @@ export function Dashboard() {
         </p>
       )}
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {cards.map(({ to, label, sub, count, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-brand-300 hover:shadow-md"
+            className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-brand-300 hover:shadow-md sm:p-6"
           >
             <div className="flex items-start justify-between">
               <div className="rounded-lg bg-brand-50 p-3 text-brand-700">

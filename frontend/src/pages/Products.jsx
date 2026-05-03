@@ -70,23 +70,23 @@ export function Products() {
   };
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Products</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Products</h1>
           <p className="text-slate-600">Manage marketplace listings</p>
         </div>
         <Link
           to="/products/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           Add product
         </Link>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="relative min-w-0 flex-1 sm:min-w-[200px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
@@ -97,7 +97,7 @@ export function Products() {
           />
         </div>
         <select
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:min-w-[10rem]"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -111,32 +111,42 @@ export function Products() {
         <button
           type="button"
           onClick={load}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50"
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 sm:w-auto"
         >
           Refresh
         </button>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="mt-6 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 bg-white shadow-sm [-webkit-overflow-scrolling:touch]">
         {loading ? (
           <div className="flex justify-center py-16">
             <Spinner className="h-10 w-10" />
           </div>
         ) : (
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[560px] text-left text-xs sm:min-w-[640px] sm:text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                <th className="px-4 py-3 font-medium text-slate-700">Title (EN)</th>
-                <th className="px-4 py-3 font-medium text-slate-700">Category</th>
-                <th className="px-4 py-3 font-medium text-slate-700">Price</th>
-                <th className="px-4 py-3 font-medium text-slate-700">Active</th>
-                <th className="px-4 py-3 font-medium text-slate-700">Actions</th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Title (EN)
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Category
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Price
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Active
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((p) => (
                 <tr key={p.id} className="border-b border-slate-100">
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <div className="font-medium text-slate-900">
                       {p.title?.en || "—"}
                     </div>
@@ -146,11 +156,11 @@ export function Products() {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{p.category}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">{p.category}</td>
+                  <td className="whitespace-nowrap px-3 py-2.5 sm:px-4 sm:py-3">
                     {p.currency} {p.price}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <span
                       className={
                         p.isActive
@@ -161,8 +171,8 @@ export function Products() {
                       {p.isActive ? "Yes" : "No"}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    <div className="flex flex-wrap gap-x-2 gap-y-1">
                       <Link
                         to={`/products/${p.id}/edit`}
                         className="inline-flex items-center gap-1 text-brand-600 hover:underline"

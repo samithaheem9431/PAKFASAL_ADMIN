@@ -146,7 +146,7 @@ export function CropsPestForm() {
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <Link
         to="/crops-diseases"
         className="mb-4 inline-flex items-center gap-2 text-sm text-slate-600"
@@ -154,12 +154,12 @@ export function CropsPestForm() {
         <ArrowLeft className="h-4 w-4" />
         Back
       </Link>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-xl font-bold sm:text-2xl">
         {isNew ? "Add crop / disease" : "Edit entry"}
       </h1>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mt-6 max-w-3xl space-y-4 rounded-xl border border-slate-200 bg-white p-6"
+        className="mt-6 w-full max-w-3xl space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-6"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -266,14 +266,17 @@ export function CropsPestForm() {
             />
           </label>
         </div>
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            className="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white"
+            className="w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white sm:w-auto"
           >
             Save
           </button>
-          <Link to="/crops-diseases" className="rounded-lg border px-5 py-2 text-sm">
+          <Link
+            to="/crops-diseases"
+            className="w-full rounded-lg border px-5 py-2.5 text-center text-sm sm:w-auto"
+          >
             Cancel
           </Link>
         </div>

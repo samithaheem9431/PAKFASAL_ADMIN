@@ -44,24 +44,24 @@ export function Articles() {
   };
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Learning articles</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold sm:text-2xl">Learning articles</h1>
           <p className="text-slate-600">Markdown content & publishing</p>
         </div>
         <Link
           to="/learning/articles/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white sm:w-auto"
         >
           <Plus className="h-4 w-4" />
           New article
         </Link>
       </div>
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap gap-2">
         <select
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="w-full min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:min-w-[12rem]"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
@@ -71,29 +71,31 @@ export function Articles() {
         </select>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="mt-6 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 bg-white shadow-sm [-webkit-overflow-scrolling:touch]">
         {loading ? (
           <div className="flex justify-center py-16">
             <Spinner className="h-10 w-10" />
           </div>
         ) : (
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[520px] text-left text-xs sm:min-w-[640px] sm:text-sm">
             <thead className="border-b bg-slate-50">
               <tr>
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Slug</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+                <th className="px-3 py-2.5 font-medium sm:px-4 sm:py-3">Title</th>
+                <th className="px-3 py-2.5 font-medium sm:px-4 sm:py-3">Slug</th>
+                <th className="px-3 py-2.5 font-medium sm:px-4 sm:py-3">Status</th>
+                <th className="px-3 py-2.5 font-medium sm:px-4 sm:py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {items.map((a) => (
                 <tr key={a.id} className="border-b border-slate-100">
-                  <td className="px-4 py-3 font-medium">
-                    <span className="block">{displayBilingual(a.title)}</span>
+                  <td className="max-w-[12rem] px-3 py-2.5 font-medium sm:max-w-none sm:px-4 sm:py-3">
+                    <span className="block break-words">{displayBilingual(a.title)}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{a.slug}</td>
-                  <td className="px-4 py-3">
+                  <td className="max-w-[8rem] break-all px-3 py-2.5 text-slate-600 sm:max-w-none sm:px-4 sm:py-3">
+                    {a.slug}
+                  </td>
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <span
                       className={
                         a.status === "published"
@@ -104,7 +106,7 @@ export function Articles() {
                       {a.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-3 py-2.5 sm:px-4 sm:py-3">
                     <Link
                       to={`/learning/articles/${a.id}/edit`}
                       className="inline-flex items-center gap-1 text-brand-600"

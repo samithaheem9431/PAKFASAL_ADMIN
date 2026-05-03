@@ -146,7 +146,7 @@ export function ProductForm() {
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <Link
         to="/products"
         className="mb-4 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-brand-700"
@@ -155,13 +155,13 @@ export function ProductForm() {
         Back to products
       </Link>
 
-      <h1 className="text-2xl font-bold text-slate-900">
+      <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
         {isNew ? "Add product" : "Edit product"}
       </h1>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mx-auto mt-6 max-w-2xl space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="mx-auto mt-6 w-full max-w-2xl space-y-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -269,16 +269,16 @@ export function ProductForm() {
           </label>
         </div>
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+            className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 sm:order-1 sm:w-auto"
           >
             Save
           </button>
           <Link
             to="/products"
-            className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm hover:bg-slate-50"
+            className="order-1 w-full rounded-lg border border-slate-300 px-5 py-2.5 text-center text-sm hover:bg-slate-50 sm:order-2 sm:w-auto"
           >
             Cancel
           </Link>

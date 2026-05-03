@@ -61,15 +61,15 @@ export function Login() {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen min-h-[100dvh]">
       <MeshGradient variant="auth" />
 
-      <div className="relative z-10 flex min-h-screen flex-col lg:flex-row">
-        <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 lg:py-16">
+      <div className="relative z-10 flex min-h-screen min-h-[100dvh] flex-col lg:flex-row">
+        <div className="flex flex-1 flex-col items-center justify-center px-4 py-8 sm:px-6 sm:py-10 lg:py-16">
           <p className="mb-3 text-center text-xs font-bold uppercase tracking-[0.2em] text-slate-700/90">
             PakFasal
           </p>
-          <h2 className="mb-6 max-w-md text-center text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+          <h2 className="mb-6 max-w-md text-center text-xl font-bold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
             Admin access
           </h2>
 
@@ -101,8 +101,8 @@ export function Login() {
           </p>
         </div>
 
-        <div className="flex flex-1 items-center justify-center p-4 pb-12 lg:pb-8">
-          <div className="w-full max-w-md rounded-2xl border border-white/50 bg-white/55 p-8 shadow-2xl shadow-emerald-900/10 ring-1 ring-white/60 backdrop-blur-xl">
+        <div className="flex flex-1 items-center justify-center p-4 pb-[max(3rem,env(safe-area-inset-bottom))] lg:pb-8">
+          <div className="w-full max-w-md rounded-2xl border border-white/50 bg-white/55 p-5 shadow-2xl shadow-emerald-900/10 ring-1 ring-white/60 backdrop-blur-xl sm:p-8">
             <div className="mb-8 flex flex-col items-center text-center">
               <div className="mb-3 inline-flex rounded-full bg-gradient-to-r from-brand-600 to-emerald-500 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white shadow-lg shadow-emerald-600/25">
                 Authenticated admins only

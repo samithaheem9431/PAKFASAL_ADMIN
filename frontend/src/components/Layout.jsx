@@ -61,44 +61,54 @@ export function Layout() {
         : "text-slate-600 hover:bg-white/80"
     }`;
 
+  const closeNav = () => setOpen(false);
+
   return (
-    <div className="relative flex min-h-screen bg-slate-50/90">
+    <div className="relative flex min-h-screen min-h-[100dvh] w-full min-w-0 bg-slate-50/90">
       <MeshGradient variant="admin" />
       <aside
-        className={`fixed inset-y-0 z-40 w-64 border-r border-white/40 bg-white/75 shadow-lg shadow-emerald-900/5 backdrop-blur-xl transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 z-40 flex w-[min(100%,18rem)] max-w-[85vw] flex-col border-r border-white/40 bg-white/75 shadow-lg shadow-emerald-900/5 backdrop-blur-xl transition-transform md:static md:max-w-none md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-emerald-100/60 bg-gradient-to-r from-white/90 to-emerald-50/40 px-4">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-emerald-100/60 bg-gradient-to-r from-white/90 to-emerald-50/40 px-4 sm:h-16">
           <Link
             to="/"
-            className="bg-gradient-to-r from-brand-700 to-emerald-600 bg-clip-text font-semibold text-transparent"
+            className="min-w-0 truncate bg-gradient-to-r from-brand-700 to-emerald-600 bg-clip-text text-sm font-semibold text-transparent sm:text-base"
+            onClick={closeNav}
           >
             PakFasal Admin
           </Link>
           <button
             type="button"
-            className="rounded p-1 md:hidden"
-            onClick={() => setOpen(false)}
+            className="shrink-0 rounded p-1 [-webkit-tap-highlight-color:transparent] md:hidden"
+            onClick={closeNav}
+            aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="flex flex-col gap-1.5 p-3">
+        <nav className="flex flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain p-3 pb-4">
           {nav.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} end={to === "/"} className={linkClass}>
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              className={linkClass}
+              onClick={closeNav}
+            >
               <Icon className="h-5 w-5 shrink-0" />
-              <span>{label}</span>
+              <span className="truncate">{label}</span>
             </NavLink>
           ))}
           {adminProfile?.role === "super_admin" && (
-            <NavLink to="/admins" className={linkClass}>
+            <NavLink to="/admins" className={linkClass} onClick={closeNav}>
               <ShieldCheck className="h-5 w-5 shrink-0" />
               <span>Admins</span>
             </NavLink>
           )}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 border-t border-emerald-100/60 bg-white/50 p-3 backdrop-blur-sm">
+        <div className="shrink-0 border-t border-emerald-100/60 bg-white/50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-sm">
           <button
             type="button"
             onClick={handleLogout}
@@ -127,18 +137,19 @@ export function Layout() {
         />
       )}
 
-      <div className="relative z-10 flex min-h-screen flex-1 flex-col md:pl-0">
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-white/50 bg-white/70 px-4 shadow-sm backdrop-blur-xl md:hidden">
+      <div className="relative z-10 flex min-h-0 min-h-screen min-h-[100dvh] w-full min-w-0 flex-1 flex-col md:pl-0">
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-white/50 bg-white/70 px-3 pt-[env(safe-area-inset-top)] shadow-sm backdrop-blur-xl md:hidden">
           <button
             type="button"
-            className="rounded p-1"
+            className="rounded p-1 [-webkit-tap-highlight-color:transparent]"
             onClick={() => setOpen(true)}
+            aria-label="Open menu"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <span className="font-semibold text-brand-700">PakFasal</span>
+          <span className="truncate font-semibold text-brand-700">PakFasal Admin</span>
         </header>
-        <main className="flex-1 p-4 md:p-8 lg:p-10">
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5 md:p-8 lg:p-10">
           <Suspense
             fallback={
               <div className="flex min-h-[40vh] items-center justify-center">

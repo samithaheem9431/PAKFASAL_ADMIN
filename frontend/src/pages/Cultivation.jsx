@@ -142,18 +142,20 @@ export function Cultivation() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Cultivation stages</h1>
-      <p className="text-slate-600">Per-crop step sequences (nested under crops)</p>
+    <div className="w-full min-w-0 max-w-full">
+      <h1 className="text-xl font-bold sm:text-2xl">Cultivation stages</h1>
+      <p className="text-sm text-slate-600 sm:text-base">
+        Per-crop step sequences (nested under crops)
+      </p>
 
       <div className="mt-6 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-4 lg:flex-row lg:items-end">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <label className="mb-1 block text-sm font-medium">Crop</label>
           {loadingCrops ? (
             <Spinner className="h-6 w-6" />
           ) : (
             <select
-              className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="w-full max-w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:max-w-md"
               value={cropId}
               onChange={(e) => setCropId(e.target.value)}
             >
@@ -166,23 +168,26 @@ export function Cultivation() {
             </select>
           )}
         </div>
-        <form onSubmit={addCrop} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+        <form
+          onSubmit={addCrop}
+          className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-end"
+        >
           <input
             placeholder="New crop (English)"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-w-[10rem] sm:flex-none"
             value={newCropNameEn}
             onChange={(e) => setNewCropNameEn(e.target.value)}
           />
           <input
             placeholder="New crop (Urdu)"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm sm:min-w-[10rem] sm:flex-none"
             dir="rtl"
             value={newCropNameUr}
             onChange={(e) => setNewCropNameUr(e.target.value)}
           />
           <button
             type="submit"
-            className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white"
+            className="w-full shrink-0 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white sm:w-auto"
           >
             Add crop
           </button>
@@ -190,7 +195,7 @@ export function Cultivation() {
       </div>
 
       {cropId && (
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <div className="mt-8 grid gap-6 lg:grid-cols-2 lg:gap-8">
           <div>
             <h2 className="text-lg font-semibold">Add cultivation document</h2>
             <p className="text-sm text-slate-600">
@@ -275,7 +280,7 @@ export function Cultivation() {
               <div>
                 <button
                   type="submit"
-                  className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white"
+                  className="w-full rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white sm:w-auto"
                 >
                   Save cultivation doc
                 </button>

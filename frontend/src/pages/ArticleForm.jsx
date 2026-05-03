@@ -144,7 +144,7 @@ export function ArticleForm() {
   }
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <Link
         to="/learning/articles"
         className="mb-4 inline-flex items-center gap-2 text-sm text-slate-600"
@@ -152,13 +152,13 @@ export function ArticleForm() {
         <ArrowLeft className="h-4 w-4" />
         Back
       </Link>
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-xl font-bold sm:text-2xl">
         {isNew ? "New article" : "Edit article"}
       </h1>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mt-6 max-w-4xl space-y-4 rounded-xl border border-slate-200 bg-white p-6"
+        className="mt-6 w-full max-w-4xl space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-6"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -215,7 +215,7 @@ export function ArticleForm() {
         <div>
           <label className="mb-1 block text-sm font-medium">Status</label>
           <select
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:min-w-[12rem]"
             {...register("status")}
           >
             <option value="draft">Draft</option>
@@ -276,14 +276,17 @@ export function ArticleForm() {
           )}
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            className="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white"
+            className="w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white sm:w-auto"
           >
             Save
           </button>
-          <Link to="/learning/articles" className="rounded-lg border px-5 py-2 text-sm">
+          <Link
+            to="/learning/articles"
+            className="w-full rounded-lg border px-5 py-2.5 text-center text-sm sm:w-auto"
+          >
             Cancel
           </Link>
         </div>
