@@ -1,6 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,6 +23,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+/** `local` (default) = survives browser restart; `session` = ends when tab closes */
+const persistenceMode = import.meta.env.VITE_AUTH_PERSISTENCE?.toLowerCase();
+const persistence =
+  persistenceMode === "session"
+    ? browserSessionPersistence
+    : browserLocalPersistence;
+setPersistence(auth, persistence).catch((err) => {
+  console.error("Firebase auth persistence:", err);
+});
+
 export let analytics = null;
 
 // Initialize analytics only when supported in this browser/runtime.

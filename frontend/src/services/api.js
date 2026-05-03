@@ -10,6 +10,8 @@ const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export const api = axios.create({
   baseURL,
+  /** Required so HTTP-only session cookie (`pakfasal.sid`) is sent cross-origin */
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -33,6 +35,34 @@ api.interceptors.request.use(
 );
 
 /**
+ * On 401, refresh ID token once and retry (keeps API session alive across expiry edges).
+ */
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+    const status = error.response?.status;
+    if (
+      status !== 401 ||
+      !original ||
+      original._retry ||
+      !auth.currentUser
+    ) {
+      return Promise.reject(error);
+    }
+    original._retry = true;
+    try {
+      await auth.currentUser.getIdToken(true);
+      const token = await auth.currentUser.getIdToken();
+      original.headers.Authorization = `Bearer ${token}`;
+      return api(original);
+    } catch {
+      return Promise.reject(error);
+    }
+  }
+);
+
+/**
  * File upload helper
  */
 export async function uploadFile(file) {
@@ -46,6 +76,7 @@ export async function uploadFile(file) {
 
   const response = await fetch(`${baseURL}/api/upload`, {
     method: "POST",
+    credentials: "include",
     headers: {
       Authorization: `Bearer ${token}`,
     },

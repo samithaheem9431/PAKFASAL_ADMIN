@@ -20,6 +20,11 @@ import { trackEvent } from "../services/analytics.js";
 
 const AuthContext = createContext(null);
 
+/** Time with no input before auto sign-out (ms). Default 2 minutes. */
+const IDLE_LOGOUT_MS = Number(
+  import.meta.env.VITE_IDLE_LOGOUT_MS ?? 2 * 60 * 1000
+);
+
 /** Maps Firebase Auth errors to clear login messages (email vs password where possible). */
 function mapFirebaseLoginError(err) {
   const code = err?.code;
@@ -53,14 +58,31 @@ export function AuthProvider({ children }) {
   const [initializing, setInitializing] = useState(true);
   const [adminOk, setAdminOk] = useState(false);
   const [adminChecked, setAdminChecked] = useState(false);
+  /** ISO string when current ID token expires (Firebase session) */
+  const [sessionExpiresAt, setSessionExpiresAt] = useState(null);
+
+  const syncTokenExpiry = useCallback(async (firebaseUser) => {
+    if (!firebaseUser) {
+      setSessionExpiresAt(null);
+      return;
+    }
+    try {
+      const r = await firebaseUser.getIdTokenResult();
+      setSessionExpiresAt(r.expirationTime);
+    } catch {
+      setSessionExpiresAt(null);
+    }
+  }, []);
 
   const verifyAdmin = useCallback(async (firebaseUser) => {
     if (!firebaseUser) {
       setAdminOk(false);
       setAdminChecked(true);
       setAdminProfile(null);
+      setSessionExpiresAt(null);
       return false;
     }
+    await syncTokenExpiry(firebaseUser);
     try {
       const { data } = await api.get("/api/auth/me");
       setAdminOk(true);
@@ -72,6 +94,7 @@ export function AuthProvider({ children }) {
       setAdminOk(false);
       setAdminChecked(true);
       setAdminProfile(null);
+      setSessionExpiresAt(null);
       if (status === 403) {
         toast.error(
           "آپ کا اکاؤنٹ ایڈمن نہیں ہے۔ / Your account is not an admin."
@@ -80,7 +103,7 @@ export function AuthProvider({ children }) {
       }
       return false;
     }
-  }, []);
+  }, [syncTokenExpiry]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -91,11 +114,27 @@ export function AuthProvider({ children }) {
         setAdminOk(false);
         setAdminChecked(true);
         setAdminProfile(null);
+        setSessionExpiresAt(null);
       }
       setInitializing(false);
     });
     return () => unsub();
   }, [verifyAdmin]);
+
+  useEffect(() => {
+    if (!user || !adminOk) return undefined;
+    const id = window.setInterval(() => {
+      syncTokenExpiry(user);
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, [user, adminOk, syncTokenExpiry]);
+
+  /** Mint / refresh HTTP-only session cookie on the API (after admin check passes). */
+  useEffect(() => {
+    if (!user || !adminOk) return undefined;
+    api.post("/api/auth/cookie").catch(() => {});
+    return undefined;
+  }, [user, adminOk]);
 
   const loginEmail = async (email, password) => {
     try {
@@ -112,18 +151,70 @@ export function AuthProvider({ children }) {
     trackEvent("admin_login", { method: "google" });
   };
 
-  const logout = async () => {
+  const logout = useCallback(async (opts = {}) => {
+    const { analyticsExtra } = opts;
+    try {
+      await api.post("/api/auth/logout");
+    } catch {
+      /* still sign out locally */
+    }
     await signOut(auth);
     setAdminOk(false);
     setAdminChecked(false);
     setAdminProfile(null);
-    trackEvent("admin_logout");
-  };
+    setSessionExpiresAt(null);
+    trackEvent("admin_logout", analyticsExtra ?? {});
+  }, []);
+
+  /** Auto sign-out after IDLE_LOGOUT_MS with no pointer/keyboard/scroll activity */
+  useEffect(() => {
+    if (!adminOk || !user) return undefined;
+
+    let timeoutId;
+
+    const fireIdleLogout = async () => {
+      toast.error("Signed out due to inactivity.");
+      await logout({ analyticsExtra: { reason: "idle_timeout" } });
+    };
+
+    const reset = () => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(fireIdleLogout, IDLE_LOGOUT_MS);
+    };
+
+    const events = ["mousedown", "keydown", "touchstart", "scroll", "click", "wheel"];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+
+    let lastMoveReset = 0;
+    const onMove = () => {
+      const now = Date.now();
+      if (now - lastMoveReset < 15_000) return;
+      lastMoveReset = now;
+      reset();
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    reset();
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      events.forEach((e) => window.removeEventListener(e, reset));
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, [adminOk, user, logout]);
 
   const refreshAdmin = useCallback(async () => {
     const u = auth.currentUser;
     if (u) await verifyAdmin(u);
   }, [verifyAdmin]);
+
+  /** Refresh Firebase ID token and session expiry (extends server-valid session). */
+  const refreshSession = useCallback(async () => {
+    const u = auth.currentUser;
+    if (!u) return;
+    await u.getIdToken(true);
+    await syncTokenExpiry(u);
+  }, [syncTokenExpiry]);
 
   const value = useMemo(
     () => ({
@@ -132,10 +223,12 @@ export function AuthProvider({ children }) {
       initializing,
       adminOk,
       adminChecked,
+      sessionExpiresAt,
       loginEmail,
       loginGoogle,
       logout,
       refreshAdmin,
+      refreshSession,
     }),
     [
       user,
@@ -143,8 +236,10 @@ export function AuthProvider({ children }) {
       initializing,
       adminOk,
       adminChecked,
+      sessionExpiresAt,
       logout,
       refreshAdmin,
+      refreshSession,
       verifyAdmin,
     ]
   );

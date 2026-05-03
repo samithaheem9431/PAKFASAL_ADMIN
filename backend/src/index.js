@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import "./firebaseAdmin.js";
+import { createSessionMiddleware } from "./config/session.js";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
@@ -13,6 +14,8 @@ import adminsRoutes from "./routes/admins.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+app.set("trust proxy", 1);
 
 /**
  * ✅ CORS FIX (VERY IMPORTANT)
@@ -36,6 +39,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(createSessionMiddleware());
 
 /**
  * Body parser

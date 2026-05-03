@@ -25,10 +25,23 @@ const nav = [
   },
 ];
 
+function sessionUntilLabel(iso) {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: "short",
+      timeStyle: "short",
+    });
+  } catch {
+    return null;
+  }
+}
+
 export function Layout() {
-  const { user, adminProfile, logout } = useAuth();
+  const { user, adminProfile, logout, sessionExpiresAt } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const sessionLabel = sessionUntilLabel(sessionExpiresAt);
 
   useEffect(() => {
     document.documentElement.dir = "ltr";
@@ -97,6 +110,11 @@ export function Layout() {
           <p className="mt-2 truncate px-1 text-xs text-slate-400">
             {user?.email}
           </p>
+          {sessionLabel && (
+            <p className="mt-1 px-1 text-[11px] leading-snug text-slate-400">
+              Session until {sessionLabel}
+            </p>
+          )}
         </div>
       </aside>
 
