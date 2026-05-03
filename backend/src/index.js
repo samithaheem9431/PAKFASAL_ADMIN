@@ -20,13 +20,19 @@ const PORT = process.env.PORT || 4000;
  */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://pakfasal-admin.vercel.app",
-      "https://pakfasal-admin-gbzcbdqee-abdul-samis-projects-c481c0a1.vercel.app"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      // allow all Vercel domains + localhost
+      if (
+        origin.includes("vercel.app") ||
+        origin.includes("localhost")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS not allowed"), false);
+    },
     credentials: true,
   })
 );
