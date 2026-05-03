@@ -1,23 +1,56 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import { ProtectedRoute } from "./routes/ProtectedRoute.jsx";
 import { useAuth } from "./context/AuthContext.jsx";
 import { Layout } from "./components/Layout.jsx";
-import { Login } from "./pages/Login.jsx";
-import { Dashboard } from "./pages/Dashboard.jsx";
-import { Products } from "./pages/Products.jsx";
-import { ProductForm } from "./pages/ProductForm.jsx";
-import { LearningHome } from "./pages/LearningHome.jsx";
-import { Articles } from "./pages/Articles.jsx";
-import { ArticleForm } from "./pages/ArticleForm.jsx";
-import { Cultivation } from "./pages/Cultivation.jsx";
-import { CropsDiseases } from "./pages/CropsDiseases.jsx";
-import { CropsPestForm } from "./pages/CropsPestForm.jsx";
-import { Admins } from "./pages/Admins.jsx";
 import { SuperAdminRoute } from "./routes/SuperAdminRoute.jsx";
+import { Spinner } from "./components/Spinner.jsx";
 import { trackEvent } from "./services/analytics.js";
+
+const Login = lazy(() =>
+  import("./pages/Login.jsx").then((m) => ({ default: m.Login }))
+);
+
+const Dashboard = lazy(() =>
+  import("./pages/Dashboard.jsx").then((m) => ({ default: m.Dashboard }))
+);
+const Products = lazy(() =>
+  import("./pages/Products.jsx").then((m) => ({ default: m.Products }))
+);
+const ProductForm = lazy(() =>
+  import("./pages/ProductForm.jsx").then((m) => ({ default: m.ProductForm }))
+);
+const LearningHome = lazy(() =>
+  import("./pages/LearningHome.jsx").then((m) => ({ default: m.LearningHome }))
+);
+const Articles = lazy(() =>
+  import("./pages/Articles.jsx").then((m) => ({ default: m.Articles }))
+);
+const ArticleForm = lazy(() =>
+  import("./pages/ArticleForm.jsx").then((m) => ({ default: m.ArticleForm }))
+);
+const Cultivation = lazy(() =>
+  import("./pages/Cultivation.jsx").then((m) => ({ default: m.Cultivation }))
+);
+const CropsDiseases = lazy(() =>
+  import("./pages/CropsDiseases.jsx").then((m) => ({ default: m.CropsDiseases }))
+);
+const CropsPestForm = lazy(() =>
+  import("./pages/CropsPestForm.jsx").then((m) => ({ default: m.CropsPestForm }))
+);
+const Admins = lazy(() =>
+  import("./pages/Admins.jsx").then((m) => ({ default: m.Admins }))
+);
+
+function LoginRouteFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-auth-hero">
+      <Spinner className="h-10 w-10 text-brand-600" />
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -26,7 +59,14 @@ export default function App() {
         <Toaster position="top-center" />
         <RouteTracker />
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={<LoginRouteFallback />}>
+                <Login />
+              </Suspense>
+            }
+          />
           <Route
             element={
               <ProtectedRoute>

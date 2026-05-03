@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { MeshGradient } from "./MeshGradient.jsx";
+import { Spinner } from "./Spinner.jsx";
 
 const nav = [
   { to: "/", label: "Dashboard", labelUr: "ڈیش بورڈ", icon: LayoutDashboard },
@@ -146,7 +147,15 @@ export function Layout() {
           <span className="font-semibold text-brand-700">PakFasal</span>
         </header>
         <main className="flex-1 p-4 md:p-8 lg:p-10">
-          <Outlet />
+          <Suspense
+            fallback={
+              <div className="flex min-h-[40vh] items-center justify-center">
+                <Spinner className="h-10 w-10 text-brand-600" />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
