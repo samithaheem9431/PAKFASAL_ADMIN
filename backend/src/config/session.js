@@ -1,4 +1,7 @@
 import session from "express-session";
+import createMemoryStore from "memorystore";
+
+const MemoryStore = createMemoryStore(session);
 
 export const SESSION_COOKIE_NAME =
   process.env.SESSION_COOKIE_NAME || "pakfasal.sid";
@@ -44,9 +47,18 @@ export function createSessionMiddleware() {
     );
   }
 
+  /**
+   * Explicit store avoids express-session’s built-in MemoryStore warning.
+   * Still in-process RAM only — use Redis (e.g. connect-redis) if you run multiple API instances.
+   */
+  const store = new MemoryStore({
+    checkPeriod: 86_400_000,
+  });
+
   return session({
     name: SESSION_COOKIE_NAME,
     secret: secret || "dev-only-min-32-chars-secret-key-change-me!!",
+    store,
     resave: false,
     saveUninitialized: false,
     rolling: true,
