@@ -1,5 +1,11 @@
 import admin from "../firebaseAdmin.js";
 import { FieldValue } from "firebase-admin/firestore";
+import {
+  validateCultivationSteps,
+  normalizeCultivationStep,
+  validateBilingualCropName,
+  normalizeBilingualCropName,
+} from "../utils/validation.js";
 
 const db = () => admin.firestore();
 
@@ -34,15 +40,11 @@ export async function createCultivationStage(req, res) {
     }
     const b = req.body;
     const steps = Array.isArray(b.steps) ? b.steps : [];
-    if (!steps.length) {
-      return res.status(400).json({ errors: ["steps array is required"] });
+    const stepErrs = validateCultivationSteps(steps);
+    if (stepErrs.length) {
+      return res.status(400).json({ errors: stepErrs });
     }
-    const normalized = steps.map((s, i) => ({
-      title: String(s.title ?? "").trim() || `Step ${i + 1}`,
-      description: String(s.description ?? "").trim(),
-      image: String(s.image ?? "").trim(),
-      order: typeof s.order === "number" ? s.order : i,
-    }));
+    const normalized = steps.map((s, i) => normalizeCultivationStep(s, i));
     const doc = {
       steps: normalized,
       updatedAt: FieldValue.serverTimestamp(),
@@ -69,12 +71,11 @@ export async function updateCultivationStage(req, res) {
     const ex = existing.data();
     let steps = ex.steps;
     if (Array.isArray(b.steps)) {
-      steps = b.steps.map((s, i) => ({
-        title: String(s.title ?? "").trim() || `Step ${i + 1}`,
-        description: String(s.description ?? "").trim(),
-        image: String(s.image ?? "").trim(),
-        order: typeof s.order === "number" ? s.order : i,
-      }));
+      const stepErrs = validateCultivationSteps(b.steps);
+      if (stepErrs.length) {
+        return res.status(400).json({ errors: stepErrs });
+      }
+      steps = b.steps.map((s, i) => normalizeCultivationStep(s, i));
     }
     await ref.update({
       steps,
@@ -106,11 +107,14 @@ export async function deleteCultivationStage(req, res) {
 export async function listCropDocs(req, res) {
   try {
     const snap = await db().collection("crops").get();
-    const items = snap.docs.map((d) => ({
-      id: d.id,
-      name: d.data().name || d.data().title || d.id,
-      ...d.data(),
-    }));
+    const items = snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        ...data,
+        id: d.id,
+        name: data.name ?? data.title ?? d.id,
+      };
+    });
     res.json({ items });
   } catch (err) {
     console.error("listCropDocs", err);
@@ -120,15 +124,16 @@ export async function listCropDocs(req, res) {
 
 export async function ensureCropDoc(req, res) {
   try {
-    const { name } = req.body;
-    if (!String(name || "").trim()) {
-      return res.status(400).json({ errors: ["name is required"] });
+    const errs = validateBilingualCropName(req.body || {});
+    if (errs.length) {
+      return res.status(400).json({ errors: errs });
     }
+    const name = normalizeBilingualCropName(req.body || {});
     const ref = await db().collection("crops").add({
-      name: String(name).trim(),
+      name,
       createdAt: FieldValue.serverTimestamp(),
     });
-    res.status(201).json({ id: ref.id, name: String(name).trim() });
+    res.status(201).json({ id: ref.id, name });
   } catch (err) {
     console.error("ensureCropDoc", err);
     res.status(500).json({ error: "Failed to create crop" });

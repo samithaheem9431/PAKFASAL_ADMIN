@@ -7,6 +7,17 @@ import { Spinner } from "../components/Spinner.jsx";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
+import { readBilingualField } from "../utils/bilingual.js";
+
+function validateBilingual(data) {
+  const te = data.titleEn?.trim();
+  const tu = data.titleUr?.trim();
+  const ce = data.contentEn?.trim();
+  const cu = data.contentUr?.trim();
+  if (!te && !tu) return "Fill title in at least English or Urdu.";
+  if (!ce && !cu) return "Fill content in at least English or Urdu.";
+  return null;
+}
 
 export function ArticleForm() {
   const { id } = useParams();
@@ -18,15 +29,18 @@ export function ArticleForm() {
 
   const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
-      title: "",
+      titleEn: "",
+      titleUr: "",
       slug: "",
-      content: "",
+      contentEn: "",
+      contentUr: "",
       coverImage: "",
       tags: "",
       status: "draft",
     },
   });
-  const content = watch("content");
+  const contentEn = watch("contentEn");
+  const contentUr = watch("contentUr");
 
   useEffect(() => {
     if (isNew) return;
@@ -41,10 +55,14 @@ export function ArticleForm() {
           return;
         }
         if (cancel) return;
+        const t = readBilingualField(a.title);
+        const c = readBilingualField(a.content);
         reset({
-          title: a.title ?? "",
+          titleEn: t.en,
+          titleUr: t.ur,
           slug: a.slug ?? "",
-          content: a.content ?? "",
+          contentEn: c.en,
+          contentUr: c.ur,
           coverImage: a.coverImage ?? "",
           tags: (a.tags || []).join(", "),
           status: a.status === "published" ? "published" : "draft",
@@ -77,14 +95,21 @@ export function ArticleForm() {
   };
 
   const onSubmit = async (data) => {
-    if (!data.title?.trim()) {
-      toast.error("Title required");
+    const v = validateBilingual(data);
+    if (v) {
+      toast.error(v);
       return;
     }
     const body = {
-      title: data.title.trim(),
+      title: {
+        en: data.titleEn?.trim() || "",
+        ur: data.titleUr?.trim() || "",
+      },
+      content: {
+        en: data.contentEn ?? "",
+        ur: data.contentUr ?? "",
+      },
       slug: data.slug?.trim() || undefined,
-      content: data.content ?? "",
       coverImage: data.coverImage?.trim() || "",
       tags: data.tags
         ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
@@ -103,7 +128,10 @@ export function ArticleForm() {
       }
       navigate("/learning/articles");
     } catch (e) {
-      toast.error(e.response?.data?.error || "Save failed");
+      const errs = e.response?.data?.errors;
+      toast.error(
+        Array.isArray(errs) ? errs.join(" ") : e.response?.data?.error || "Save failed"
+      );
     }
   };
 
@@ -132,18 +160,28 @@ export function ArticleForm() {
         onSubmit={handleSubmit(onSubmit)}
         className="mt-6 max-w-4xl space-y-4 rounded-xl border border-slate-200 bg-white p-6"
       >
-        <div>
-          <label className="mb-1 block text-sm font-medium">Title *</label>
-          <input
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("title")}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Title (English)</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("titleEn")}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Title (Urdu)</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              dir="rtl"
+              {...register("titleUr")}
+            />
+          </div>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Slug</label>
           <input
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            placeholder="auto from title if empty"
+            placeholder="auto from English title if empty"
             {...register("slug")}
           />
         </div>
@@ -184,9 +222,10 @@ export function ArticleForm() {
             <option value="published">Published</option>
           </select>
         </div>
+
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium">Content (Markdown)</label>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-sm font-medium">Content (Markdown)</span>
             <button
               type="button"
               onClick={() => setPreview((p) => !p)}
@@ -196,17 +235,47 @@ export function ArticleForm() {
             </button>
           </div>
           {preview ? (
-            <div className="prose prose-sm max-w-none min-h-[200px] rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <ReactMarkdown>{content || ""}</ReactMarkdown>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="mb-1 text-xs font-medium text-slate-500">English</p>
+                <div className="prose prose-sm max-w-none min-h-[160px] rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <ReactMarkdown>{contentEn || ""}</ReactMarkdown>
+                </div>
+              </div>
+              <div dir="rtl">
+                <p className="mb-1 text-xs font-medium text-slate-500">Urdu</p>
+                <div className="prose prose-sm max-w-none min-h-[160px] rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <ReactMarkdown>{contentUr || ""}</ReactMarkdown>
+                </div>
+              </div>
             </div>
           ) : (
-            <textarea
-              rows={14}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
-              {...register("content")}
-            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  English
+                </label>
+                <textarea
+                  rows={14}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                  {...register("contentEn")}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">
+                  Urdu
+                </label>
+                <textarea
+                  rows={14}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                  dir="rtl"
+                  {...register("contentUr")}
+                />
+              </div>
+            </div>
           )}
         </div>
+
         <div className="flex gap-2 pt-2">
           <button
             type="submit"

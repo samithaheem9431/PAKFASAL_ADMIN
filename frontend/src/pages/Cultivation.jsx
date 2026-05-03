@@ -5,6 +5,16 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { Plus, Trash2, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
+import { displayBilingual } from "../utils/bilingual.js";
+
+const emptyStep = {
+  titleEn: "",
+  titleUr: "",
+  descEn: "",
+  descUr: "",
+  image: "",
+  order: 0,
+};
 
 export function Cultivation() {
   const [crops, setCrops] = useState([]);
@@ -12,10 +22,11 @@ export function Cultivation() {
   const [stages, setStages] = useState([]);
   const [loadingCrops, setLoadingCrops] = useState(true);
   const [loadingStages, setLoadingStages] = useState(false);
-  const [newCropName, setNewCropName] = useState("");
+  const [newCropNameEn, setNewCropNameEn] = useState("");
+  const [newCropNameUr, setNewCropNameUr] = useState("");
 
   const { register, control, handleSubmit, reset, setValue } = useForm({
-    defaultValues: { steps: [{ title: "", description: "", image: "", order: 0 }] },
+    defaultValues: { steps: [{ ...emptyStep }] },
   });
   const { fields, append, remove } = useFieldArray({ control, name: "steps" });
 
@@ -60,16 +71,27 @@ export function Cultivation() {
 
   const addCrop = async (e) => {
     e.preventDefault();
-    if (!newCropName.trim()) return;
+    const en = newCropNameEn.trim();
+    const ur = newCropNameUr.trim();
+    if (!en && !ur) {
+      toast.error("Enter crop name in at least English or Urdu");
+      return;
+    }
     try {
-      const { data } = await api.post("/api/crops", { name: newCropName.trim() });
-      trackEvent("admin_crop_create", { crop_name: newCropName.trim() });
+      const { data } = await api.post("/api/crops", {
+        name: { en, ur },
+      });
+      trackEvent("admin_crop_create", { crop_name: en || ur });
       toast.success("Crop added");
-      setNewCropName("");
+      setNewCropNameEn("");
+      setNewCropNameUr("");
       setCrops((c) => [...c, { id: data.id, name: data.name }]);
       setCropId(data.id);
     } catch (e) {
-      toast.error(e.response?.data?.error || "Failed");
+      const errs = e.response?.data?.errors;
+      toast.error(
+        Array.isArray(errs) ? errs.join(" ") : e.response?.data?.error || "Failed"
+      );
     }
   };
 
@@ -79,8 +101,14 @@ export function Cultivation() {
       return;
     }
     const steps = form.steps.map((s, i) => ({
-      title: s.title?.trim() || `Step ${i + 1}`,
-      description: s.description?.trim() || "",
+      title: {
+        en: s.titleEn?.trim() || "",
+        ur: s.titleUr?.trim() || "",
+      },
+      description: {
+        en: s.descEn?.trim() || "",
+        ur: s.descUr?.trim() || "",
+      },
       image: s.image?.trim() || "",
       order: typeof s.order === "number" ? s.order : i,
     }));
@@ -91,10 +119,13 @@ export function Cultivation() {
         steps_count: steps.length,
       });
       toast.success("Cultivation doc added");
-      reset({ steps: [{ title: "", description: "", image: "", order: 0 }] });
+      reset({ steps: [{ ...emptyStep }] });
       loadStages(cropId);
     } catch (e) {
-      toast.error(e.response?.data?.error || "Save failed");
+      const errs = e.response?.data?.errors;
+      toast.error(
+        Array.isArray(errs) ? errs.join(" ") : e.response?.data?.error || "Save failed"
+      );
     }
   });
 
@@ -129,18 +160,25 @@ export function Cultivation() {
               <option value="">Select crop</option>
               {crops.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name || c.id}
+                  {displayBilingual(c.name) || c.id}
                 </option>
               ))}
             </select>
           )}
         </div>
-        <form onSubmit={addCrop} className="flex flex-wrap gap-2">
+        <form onSubmit={addCrop} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
           <input
-            placeholder="New crop name"
+            placeholder="New crop (English)"
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            value={newCropName}
-            onChange={(e) => setNewCropName(e.target.value)}
+            value={newCropNameEn}
+            onChange={(e) => setNewCropNameEn(e.target.value)}
+          />
+          <input
+            placeholder="New crop (Urdu)"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            dir="rtl"
+            value={newCropNameUr}
+            onChange={(e) => setNewCropNameUr(e.target.value)}
           />
           <button
             type="submit"
@@ -156,7 +194,8 @@ export function Cultivation() {
           <div>
             <h2 className="text-lg font-semibold">Add cultivation document</h2>
             <p className="text-sm text-slate-600">
-              One document contains an ordered list of steps.
+              One document contains an ordered list of steps. Fill English and/or Urdu for each
+              field.
             </p>
             <form onSubmit={onCreateDoc} className="mt-4 space-y-3">
               {fields.map((field, index) => (
@@ -176,27 +215,41 @@ export function Cultivation() {
                       </button>
                     )}
                   </div>
-                  <input
-                    className="w-full rounded border px-2 py-1 text-sm"
-                    placeholder="Title"
-                    {...register(`steps.${index}.title`)}
-                  />
-                  <textarea
-                    className="w-full rounded border px-2 py-1 text-sm"
-                    rows={2}
-                    placeholder="Description"
-                    {...register(`steps.${index}.description`)}
-                  />
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <input
+                      className="w-full rounded border px-2 py-1 text-sm"
+                      placeholder="Title (English)"
+                      {...register(`steps.${index}.titleEn`)}
+                    />
+                    <input
+                      className="w-full rounded border px-2 py-1 text-sm"
+                      placeholder="Title (Urdu)"
+                      dir="rtl"
+                      {...register(`steps.${index}.titleUr`)}
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <textarea
+                      className="w-full rounded border px-2 py-1 text-sm"
+                      rows={2}
+                      placeholder="Description (English)"
+                      {...register(`steps.${index}.descEn`)}
+                    />
+                    <textarea
+                      className="w-full rounded border px-2 py-1 text-sm"
+                      rows={2}
+                      placeholder="Description (Urdu)"
+                      dir="rtl"
+                      {...register(`steps.${index}.descUr`)}
+                    />
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <input
                       className="min-w-0 flex-1 rounded border px-2 py-1 text-sm"
                       placeholder="Image URL"
                       {...register(`steps.${index}.image`)}
                     />
-                    <StepUpload
-                      index={index}
-                      setValue={setValue}
-                    />
+                    <StepUpload index={index} setValue={setValue} />
                   </div>
                   <input
                     type="number"
@@ -209,7 +262,10 @@ export function Cultivation() {
               <button
                 type="button"
                 onClick={() =>
-                  append({ title: "", description: "", image: "", order: fields.length })
+                  append({
+                    ...emptyStep,
+                    order: fields.length,
+                  })
                 }
                 className="inline-flex items-center gap-1 text-sm text-brand-600"
               >
@@ -253,7 +309,7 @@ export function Cultivation() {
                     <ol className="list-decimal space-y-2 pl-4 text-sm">
                       {(doc.steps || []).map((s, i) => (
                         <li key={i}>
-                          <strong>{s.title}</strong>
+                          <strong>{displayBilingual(s.title)}</strong>
                           {s.image && (
                             <img
                               src={s.image}
@@ -261,7 +317,7 @@ export function Cultivation() {
                               className="mt-1 h-16 w-16 rounded object-cover"
                             />
                           )}
-                          <p className="text-slate-600">{s.description}</p>
+                          <p className="text-slate-600">{displayBilingual(s.description)}</p>
                         </li>
                       ))}
                     </ol>

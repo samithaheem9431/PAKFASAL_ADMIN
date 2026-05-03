@@ -1,5 +1,9 @@
 import admin from "../firebaseAdmin.js";
 import { FieldValue } from "firebase-admin/firestore";
+import {
+  validateBilingualCropsPest,
+  normalizeBilingualCropsPest,
+} from "../utils/validation.js";
 
 const db = () => admin.firestore();
 
@@ -23,15 +27,16 @@ export async function listCropsPests(req, res) {
 export async function createCropsPests(req, res) {
   try {
     const b = req.body;
-    if (!String(b.cropName || "").trim()) {
-      return res.status(400).json({ errors: ["cropName is required"] });
+    const errs = validateBilingualCropsPest(b);
+    if (errs.length) {
+      return res.status(400).json({ errors: errs });
     }
+    const bi = normalizeBilingualCropsPest(b);
     const doc = {
-      cropName: String(b.cropName).trim(),
-      diseaseName: String(b.diseaseName ?? "").trim(),
-      symptoms: String(b.symptoms ?? "").trim(),
-      treatment: String(b.treatment ?? "").trim(),
-      language: String(b.language ?? "en").trim() || "en",
+      cropName: bi.cropName,
+      diseaseName: bi.diseaseName,
+      symptoms: bi.symptoms,
+      treatment: bi.treatment,
       images: Array.isArray(b.images) ? b.images : [],
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
@@ -45,6 +50,15 @@ export async function createCropsPests(req, res) {
   }
 }
 
+function legacyField(v, fallback = { en: "", ur: "" }) {
+  if (v == null) return fallback;
+  if (typeof v === "string") return { en: v.trim(), ur: "" };
+  return {
+    en: String(v.en ?? "").trim(),
+    ur: String(v.ur ?? "").trim(),
+  };
+}
+
 export async function updateCropsPests(req, res) {
   try {
     const { id } = req.params;
@@ -52,24 +66,42 @@ export async function updateCropsPests(req, res) {
     const existing = await ref.get();
     if (!existing.exists) return res.status(404).json({ error: "Not found" });
     const b = req.body;
+    const ex = existing.data();
+    const prev = {
+      cropName: legacyField(ex.cropName),
+      diseaseName: legacyField(ex.diseaseName),
+      symptoms: legacyField(ex.symptoms),
+      treatment: legacyField(ex.treatment),
+    };
+    const merged = {
+      cropName: {
+        en: b.cropName?.en != null ? b.cropName.en : prev.cropName.en,
+        ur: b.cropName?.ur != null ? b.cropName.ur : prev.cropName.ur,
+      },
+      diseaseName: {
+        en: b.diseaseName?.en != null ? b.diseaseName.en : prev.diseaseName.en,
+        ur: b.diseaseName?.ur != null ? b.diseaseName.ur : prev.diseaseName.ur,
+      },
+      symptoms: {
+        en: b.symptoms?.en != null ? b.symptoms.en : prev.symptoms.en,
+        ur: b.symptoms?.ur != null ? b.symptoms.ur : prev.symptoms.ur,
+      },
+      treatment: {
+        en: b.treatment?.en != null ? b.treatment.en : prev.treatment.en,
+        ur: b.treatment?.ur != null ? b.treatment.ur : prev.treatment.ur,
+      },
+    };
+    const errs = validateBilingualCropsPest(merged);
+    if (errs.length) {
+      return res.status(400).json({ errors: errs });
+    }
+    const bi = normalizeBilingualCropsPest(merged);
     const patch = {
-      cropName:
-        b.cropName != null ? String(b.cropName).trim() : existing.data().cropName,
-      diseaseName:
-        b.diseaseName != null
-          ? String(b.diseaseName).trim()
-          : existing.data().diseaseName,
-      symptoms:
-        b.symptoms != null ? String(b.symptoms).trim() : existing.data().symptoms,
-      treatment:
-        b.treatment != null
-          ? String(b.treatment).trim()
-          : existing.data().treatment,
-      language:
-        b.language != null
-          ? String(b.language).trim()
-          : existing.data().language,
-      images: Array.isArray(b.images) ? b.images : existing.data().images ?? [],
+      cropName: bi.cropName,
+      diseaseName: bi.diseaseName,
+      symptoms: bi.symptoms,
+      treatment: bi.treatment,
+      images: Array.isArray(b.images) ? b.images : ex.images ?? [],
       updatedAt: FieldValue.serverTimestamp(),
     };
     await ref.update(patch);

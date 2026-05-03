@@ -1,5 +1,9 @@
 import admin from "../firebaseAdmin.js";
 import { FieldValue } from "firebase-admin/firestore";
+import {
+  validateBilingualArticle,
+  normalizeBilingualArticle,
+} from "../utils/validation.js";
 
 const db = () => admin.firestore();
 
@@ -35,15 +39,17 @@ export async function listArticles(req, res) {
 export async function createArticle(req, res) {
   try {
     const b = req.body;
-    if (!String(b.title || "").trim()) {
-      return res.status(400).json({ errors: ["title is required"] });
+    const errs = validateBilingualArticle(b);
+    if (errs.length) {
+      return res.status(400).json({ errors: errs });
     }
-    let slug = slugify(b.slug || b.title);
+    const bi = normalizeBilingualArticle(b);
+    let slug = slugify(b.slug || bi.title.en || bi.title.ur);
     if (!slug) slug = `article-${Date.now()}`;
     const doc = {
-      title: String(b.title).trim(),
+      title: bi.title,
       slug,
-      content: String(b.content ?? ""),
+      content: bi.content,
       coverImage: String(b.coverImage ?? "").trim(),
       tags: Array.isArray(b.tags) ? b.tags.map(String) : [],
       status: b.status === "published" ? "published" : "draft",
@@ -67,16 +73,41 @@ export async function updateArticle(req, res) {
     if (!existing.exists) return res.status(404).json({ error: "Not found" });
     const b = req.body;
     const ex = existing.data();
+    const prevTitle =
+      typeof ex.title === "string"
+        ? { en: ex.title, ur: "" }
+        : { en: ex.title?.en ?? "", ur: ex.title?.ur ?? "" };
+    const prevContent =
+      typeof ex.content === "string"
+        ? { en: ex.content, ur: "" }
+        : { en: ex.content?.en ?? "", ur: ex.content?.ur ?? "" };
+
+    const mergedForValidate = {
+      title: {
+        en: b.title?.en != null ? b.title.en : prevTitle.en,
+        ur: b.title?.ur != null ? b.title.ur : prevTitle.ur,
+      },
+      content: {
+        en: b.content?.en != null ? b.content.en : prevContent.en,
+        ur: b.content?.ur != null ? b.content.ur : prevContent.ur,
+      },
+    };
+    const errs = validateBilingualArticle(mergedForValidate);
+    if (errs.length) {
+      return res.status(400).json({ errors: errs });
+    }
+
+    const bi = normalizeBilingualArticle(mergedForValidate);
     const slug =
       b.slug != null
         ? slugify(b.slug) || ex.slug
         : b.title != null
-          ? slugify(b.title) || ex.slug
+          ? slugify(bi.title.en || bi.title.ur) || ex.slug
           : ex.slug;
     const patch = {
-      title: b.title != null ? String(b.title).trim() : ex.title,
+      title: bi.title,
       slug,
-      content: b.content != null ? String(b.content) : ex.content,
+      content: bi.content,
       coverImage:
         b.coverImage != null ? String(b.coverImage).trim() : ex.coverImage,
       tags: Array.isArray(b.tags) ? b.tags.map(String) : ex.tags ?? [],

@@ -5,6 +5,7 @@ import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
+import { displayBilingual } from "../utils/bilingual.js";
 
 export function Articles() {
   const [items, setItems] = useState([]);
@@ -88,7 +89,9 @@ export function Articles() {
             <tbody>
               {items.map((a) => (
                 <tr key={a.id} className="border-b border-slate-100">
-                  <td className="px-4 py-3 font-medium">{a.title}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <span className="block">{displayBilingual(a.title)}</span>
+                  </td>
                   <td className="px-4 py-3 text-slate-600">{a.slug}</td>
                   <td className="px-4 py-3">
                     <span

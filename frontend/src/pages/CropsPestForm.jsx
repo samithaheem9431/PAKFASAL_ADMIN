@@ -6,6 +6,14 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
+import { readBilingualField } from "../utils/bilingual.js";
+
+function validateCrop(data) {
+  const ce = data.cropNameEn?.trim();
+  const cu = data.cropNameUr?.trim();
+  if (!ce && !cu) return "Fill crop name in at least English or Urdu.";
+  return null;
+}
 
 export function CropsPestForm() {
   const { id } = useParams();
@@ -16,11 +24,14 @@ export function CropsPestForm() {
 
   const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
-      cropName: "",
-      diseaseName: "",
-      symptoms: "",
-      treatment: "",
-      language: "en",
+      cropNameEn: "",
+      cropNameUr: "",
+      diseaseNameEn: "",
+      diseaseNameUr: "",
+      symptomsEn: "",
+      symptomsUr: "",
+      treatmentEn: "",
+      treatmentUr: "",
       images: [],
     },
   });
@@ -39,12 +50,19 @@ export function CropsPestForm() {
           return;
         }
         if (cancel) return;
+        const cn = readBilingualField(row.cropName);
+        const dn = readBilingualField(row.diseaseName);
+        const sy = readBilingualField(row.symptoms);
+        const tr = readBilingualField(row.treatment);
         reset({
-          cropName: row.cropName ?? "",
-          diseaseName: row.diseaseName ?? "",
-          symptoms: row.symptoms ?? "",
-          treatment: row.treatment ?? "",
-          language: row.language ?? "en",
+          cropNameEn: cn.en,
+          cropNameUr: cn.ur,
+          diseaseNameEn: dn.en,
+          diseaseNameUr: dn.ur,
+          symptomsEn: sy.en,
+          symptomsUr: sy.ur,
+          treatmentEn: tr.en,
+          treatmentUr: tr.ur,
           images: row.images ?? [],
         });
       } catch (e) {
@@ -76,31 +94,46 @@ export function CropsPestForm() {
   };
 
   const onSubmit = async (data) => {
-    if (!data.cropName?.trim()) {
-      toast.error("Crop name is required");
+    const v = validateCrop(data);
+    if (v) {
+      toast.error(v);
       return;
     }
     const body = {
-      cropName: data.cropName.trim(),
-      diseaseName: data.diseaseName?.trim() || "",
-      symptoms: data.symptoms?.trim() || "",
-      treatment: data.treatment?.trim() || "",
-      language: data.language || "en",
+      cropName: {
+        en: data.cropNameEn?.trim() || "",
+        ur: data.cropNameUr?.trim() || "",
+      },
+      diseaseName: {
+        en: data.diseaseNameEn?.trim() || "",
+        ur: data.diseaseNameUr?.trim() || "",
+      },
+      symptoms: {
+        en: data.symptomsEn?.trim() || "",
+        ur: data.symptomsUr?.trim() || "",
+      },
+      treatment: {
+        en: data.treatmentEn?.trim() || "",
+        ur: data.treatmentUr?.trim() || "",
+      },
       images,
     };
     try {
       if (isNew) {
         await api.post("/api/crops-pests", body);
-        trackEvent("admin_crop_disease_create", { language: body.language });
+        trackEvent("admin_crop_disease_create", {});
         toast.success("Created");
       } else {
         await api.put(`/api/crops-pests/${id}`, body);
-        trackEvent("admin_crop_disease_update", { record_id: id, language: body.language });
+        trackEvent("admin_crop_disease_update", { record_id: id });
         toast.success("Updated");
       }
       navigate("/crops-diseases");
     } catch (e) {
-      toast.error(e.response?.data?.error || "Save failed");
+      const errs = e.response?.data?.errors;
+      toast.error(
+        Array.isArray(errs) ? errs.join(" ") : e.response?.data?.error || "Save failed"
+      );
     }
   };
 
@@ -126,47 +159,79 @@ export function CropsPestForm() {
       </h1>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mt-6 max-w-2xl space-y-4 rounded-xl border border-slate-200 bg-white p-6"
+        className="mt-6 max-w-3xl space-y-4 rounded-xl border border-slate-200 bg-white p-6"
       >
-        <div>
-          <label className="mb-1 block text-sm font-medium">Crop name *</label>
-          <input
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("cropName", { required: true })}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Crop name (English) *</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("cropNameEn")}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Crop name (Urdu)</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              dir="rtl"
+              {...register("cropNameUr")}
+            />
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">Disease name</label>
-          <input
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("diseaseName")}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Disease name (English)</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("diseaseNameEn")}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Disease name (Urdu)</label>
+            <input
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              dir="rtl"
+              {...register("diseaseNameUr")}
+            />
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">Symptoms</label>
-          <textarea
-            rows={3}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("symptoms")}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Symptoms (English)</label>
+            <textarea
+              rows={3}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("symptomsEn")}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Symptoms (Urdu)</label>
+            <textarea
+              rows={3}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              dir="rtl"
+              {...register("symptomsUr")}
+            />
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">Treatment</label>
-          <textarea
-            rows={3}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("treatment")}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">Language</label>
-          <select
-            className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("language")}
-          >
-            <option value="en">English</option>
-            <option value="ur">Urdu</option>
-          </select>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Treatment (English)</label>
+            <textarea
+              rows={3}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("treatmentEn")}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Treatment (Urdu)</label>
+            <textarea
+              rows={3}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              dir="rtl"
+              {...register("treatmentUr")}
+            />
+          </div>
         </div>
         <div>
           <p className="mb-2 text-sm font-medium">Images</p>

@@ -5,6 +5,7 @@ import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
+import { displayBilingual } from "../utils/bilingual.js";
 
 export function CropsDiseases() {
   const [items, setItems] = useState([]);
@@ -65,16 +66,16 @@ export function CropsDiseases() {
               <tr>
                 <th className="px-4 py-3 font-medium">Crop</th>
                 <th className="px-4 py-3 font-medium">Disease</th>
-                <th className="px-4 py-3 font-medium">Language</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {items.map((row) => (
                 <tr key={row.id} className="border-b border-slate-100">
-                  <td className="px-4 py-3 font-medium">{row.cropName}</td>
-                  <td className="px-4 py-3 text-slate-600">{row.diseaseName}</td>
-                  <td className="px-4 py-3">{row.language}</td>
+                  <td className="px-4 py-3 font-medium">{displayBilingual(row.cropName)}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {displayBilingual(row.diseaseName)}
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       to={`/crops-diseases/${row.id}/edit`}
