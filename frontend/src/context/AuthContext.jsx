@@ -20,6 +20,33 @@ import { trackEvent } from "../services/analytics.js";
 
 const AuthContext = createContext(null);
 
+/** Maps Firebase Auth errors to clear login messages (email vs password where possible). */
+function mapFirebaseLoginError(err) {
+  const code = err?.code;
+  if (code === "auth/invalid-email") {
+    return "Wrong or invalid email address.";
+  }
+  if (code === "auth/user-not-found") {
+    return "Wrong email — no account uses this address.";
+  }
+  if (code === "auth/wrong-password") {
+    return "Wrong password.";
+  }
+  if (code === "auth/invalid-credential") {
+    return "Incorrect email or password.";
+  }
+  if (code === "auth/user-disabled") {
+    return "This account has been disabled.";
+  }
+  if (code === "auth/too-many-requests") {
+    return "Too many attempts. Try again later.";
+  }
+  if (code === "auth/network-request-failed") {
+    return "Network error. Check your connection.";
+  }
+  return err?.message || "Login failed.";
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [adminProfile, setAdminProfile] = useState(null);
@@ -71,8 +98,12 @@ export function AuthProvider({ children }) {
   }, [verifyAdmin]);
 
   const loginEmail = async (email, password) => {
-    await signInWithEmailAndPassword(auth, email, password);
-    trackEvent("admin_login", { method: "email" });
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      trackEvent("admin_login", { method: "email" });
+    } catch (e) {
+      throw new Error(mapFirebaseLoginError(e));
+    }
   };
 
   const loginGoogle = async () => {

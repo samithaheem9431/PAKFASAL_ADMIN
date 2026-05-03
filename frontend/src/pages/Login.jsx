@@ -23,7 +23,12 @@ export function Login() {
   const loc = useLocation();
   const from = loc.state?.from || "/";
   const [busy, setBusy] = useState(false);
-  const { register, handleSubmit } = useForm({
+  const [authError, setAuthError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     defaultValues: { email: "", password: "" },
   });
 
@@ -33,10 +38,12 @@ export function Login() {
 
   const onEmail = handleSubmit(async ({ email, password }) => {
     setBusy(true);
+    setAuthError("");
     try {
-      await loginEmail(email, password);
+      await loginEmail(email.trim(), password);
     } catch (e) {
-      toast.error(e.message || "Login failed");
+      const msg = e.message || "Login failed";
+      setAuthError(msg);
     } finally {
       setBusy(false);
     }
@@ -106,7 +113,7 @@ export function Login() {
               </p>
             </div>
 
-            <form onSubmit={onEmail} className="space-y-4">
+            <form onSubmit={onEmail} className="space-y-4" noValidate>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Email
@@ -114,9 +121,25 @@ export function Login() {
                 <input
                   type="email"
                   autoComplete="email"
-                  className="w-full rounded-xl border-0 bg-white/70 px-3.5 py-2.5 text-sm shadow-inner shadow-slate-900/5 ring-1 ring-slate-200/80 transition placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
-                  {...register("email", { required: true })}
+                  aria-invalid={errors.email ? "true" : "false"}
+                  className={`w-full rounded-xl border-0 bg-white/70 px-3.5 py-2.5 text-sm shadow-inner shadow-slate-900/5 ring-1 transition placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 ${
+                    errors.email
+                      ? "ring-red-400 focus:ring-red-500/40"
+                      : "ring-slate-200/80 focus:ring-brand-500/40"
+                  }`}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Enter a valid email address",
+                    },
+                  })}
                 />
+                {errors.email && (
+                  <p className="mt-1.5 text-sm text-red-600" role="alert">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -125,10 +148,30 @@ export function Login() {
                 <input
                   type="password"
                   autoComplete="current-password"
-                  className="w-full rounded-xl border-0 bg-white/70 px-3.5 py-2.5 text-sm shadow-inner shadow-slate-900/5 ring-1 ring-slate-200/80 transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/40"
-                  {...register("password", { required: true })}
+                  aria-invalid={errors.password ? "true" : "false"}
+                  className={`w-full rounded-xl border-0 bg-white/70 px-3.5 py-2.5 text-sm shadow-inner shadow-slate-900/5 ring-1 transition focus:bg-white focus:outline-none focus:ring-2 ${
+                    errors.password
+                      ? "ring-red-400 focus:ring-red-500/40"
+                      : "ring-slate-200/80 focus:ring-brand-500/40"
+                  }`}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
                 />
+                {errors.password && (
+                  <p className="mt-1.5 text-sm text-red-600" role="alert">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
+              {authError && (
+                <p
+                  className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200/80"
+                  role="alert"
+                >
+                  {authError}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={busy}
