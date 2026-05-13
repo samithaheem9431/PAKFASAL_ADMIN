@@ -7,10 +7,8 @@ import {
   useState,
 } from "react";
 import {
-  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithPopup,
   signOut,
 } from "firebase/auth";
 import { auth } from "../services/firebase.js";
@@ -145,12 +143,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loginGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    trackEvent("admin_login", { method: "google" });
-  };
-
   const logout = useCallback(async (opts = {}) => {
     const { analyticsExtra } = opts;
     try {
@@ -225,7 +217,6 @@ export function AuthProvider({ children }) {
       adminChecked,
       sessionExpiresAt,
       loginEmail,
-      loginGoogle,
       logout,
       refreshAdmin,
       refreshSession,
@@ -237,6 +228,7 @@ export function AuthProvider({ children }) {
       adminOk,
       adminChecked,
       sessionExpiresAt,
+      loginEmail,
       logout,
       refreshAdmin,
       refreshSession,
