@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { api } from "../services/api.js";
@@ -37,8 +37,12 @@ export function LearningArticleForm() {
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState([]);
   const [originalSectionIds, setOriginalSectionIds] = useState([]);
+  // Tracks the article ID once created, so a retry after a partial failure
+  // (article saved, some section save failed) updates it instead of
+  // creating a duplicate article.
+  const createdArticleIdRef = useRef(null);
 
-  const { register, control, handleSubmit, reset } = useForm({
+  const { register, control, handleSubmit, reset, setValue } = useForm({
     defaultValues: {
       categoryEn: "",
       categoryUr: "",
@@ -145,14 +149,20 @@ export function LearningArticleForm() {
         order: Number(data.order),
       };
 
-      let articleId = id;
-      if (isNew) {
+      // If a previous save attempt already created the article but failed
+      // partway through saving its sections, reuse that ID and PUT instead
+      // of POSTing a duplicate article on retry.
+      const alreadyCreated = !isNew || !!createdArticleIdRef.current;
+      let articleId = isNew ? createdArticleIdRef.current : id;
+
+      if (alreadyCreated) {
+        await api.put(`/api/learning-articles/${articleId}`, body);
+        trackEvent("admin_learning_article_update", { article_id: articleId });
+      } else {
         const { data: created } = await api.post("/api/learning-articles", body);
         articleId = created.id;
+        createdArticleIdRef.current = articleId;
         trackEvent("admin_learning_article_create", { article_id: articleId });
-      } else {
-        await api.put(`/api/learning-articles/${id}`, body);
-        trackEvent("admin_learning_article_update", { article_id: id });
       }
 
       const currentIds = new Set();
@@ -170,15 +180,23 @@ export function LearningArticleForm() {
           currentIds.add(s._id);
           await api.put(`/api/article-sections/${s._id}`, sectionBody);
         } else {
-          await api.post("/api/article-sections", sectionBody);
+          // Record the new section's ID immediately so a retry after a
+          // later failure updates it instead of creating a duplicate.
+          const { data: createdSection } = await api.post(
+            "/api/article-sections",
+            sectionBody
+          );
+          setValue(`sections.${i}._id`, createdSection.id);
+          currentIds.add(createdSection.id);
         }
       }
       const removed = originalSectionIds.filter((sid) => !currentIds.has(sid));
       for (const sid of removed) {
         await api.delete(`/api/article-sections/${sid}`);
       }
+      setOriginalSectionIds([...currentIds]);
 
-      toast.success(isNew ? "Article created" : "Article updated");
+      toast.success(alreadyCreated ? "Article updated" : "Article created");
       navigate("/learning/articles");
     } catch (e) {
       const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { api } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
@@ -39,7 +39,7 @@ export function CropDiseaseForm() {
   const [loading, setLoading] = useState(!isNew);
   const [crops, setCrops] = useState([]);
 
-  const { register, handleSubmit, reset } = useForm({
+  const { register, control, handleSubmit, reset } = useForm({
     defaultValues: {
       cropId: "",
       order: 0,
@@ -171,17 +171,23 @@ export function CropDiseaseForm() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium">Crop</label>
-            <select
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              {...register("cropId")}
-            >
-              <option value="">Select a crop…</option>
-              {crops.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nameEn}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="cropId"
+              control={control}
+              render={({ field }) => (
+                <select
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  {...field}
+                >
+                  <option value="">Select a crop…</option>
+                  {crops.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nameEn}
+                    </option>
+                  ))}
+                </select>
+              )}
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Display order (within crop)</label>
