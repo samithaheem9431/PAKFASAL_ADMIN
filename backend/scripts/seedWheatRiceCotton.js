@@ -83,8 +83,67 @@ const CROPS = [
           "شدید حملے کی صورت میں تجویز کردہ سسٹیمک کیڑے مار دوا استعمال کریں",
         ],
       },
+      {
+        order: 3,
+        nameEn: "Loose Smut",
+        nameUr: "کانگیاری",
+        descriptionEn:
+          "A seed-borne fungal disease that replaces wheat grains with black powdery spores.",
+        descriptionUr:
+          "ایک بیج سے پھیلنے والی پھپھوندی جو گندم کے دانوں کو کالے پاؤڈر نما بیجانوں سے بدل دیتی ہے۔",
+        symptomsEn: [
+          "Black powdery masses replacing grains in the ear head",
+          "Infected ears emerge slightly earlier than healthy ones",
+          "Spores spread by wind to healthy flowers during flowering",
+        ],
+        symptomsUr: [
+          "بالی کے دانوں کی جگہ کالے پاؤڈر نما مادے کا بن جانا",
+          "متاثرہ بالیاں صحت مند بالیوں سے کچھ پہلے نکلتی ہیں",
+          "پھول آنے کے دوران بیجانے ہوا کے ذریعے صحت مند پھولوں تک پھیل جاتے ہیں",
+        ],
+        solutionsEn: [
+          "Treat seed with a systemic fungicide (e.g. Carboxin or Tebuconazole) before sowing",
+          "Use certified, disease-free seed",
+          "Avoid using seed from an infected field",
+        ],
+        solutionsUr: [
+          "بوائی سے پہلے بیج کو سسٹیمک فنجی سائیڈ (مثلاً کاربوکسن یا ٹیبوکونازول) سے علاج کریں",
+          "سرٹیفائیڈ اور بیماری سے پاک بیج استعمال کریں",
+          "متاثرہ کھیت کا بیج استعمال کرنے سے گریز کریں",
+        ],
+      },
+      {
+        order: 4,
+        nameEn: "Termites",
+        nameUr: "دیمک",
+        descriptionEn:
+          "Soil-dwelling insects that damage wheat roots and stems, especially in dry conditions.",
+        descriptionUr:
+          "مٹی میں رہنے والے کیڑے جو خاص طور پر خشک حالات میں گندم کی جڑوں اور تنوں کو نقصان پہنچاتے ہیں۔",
+        symptomsEn: [
+          "Wilting and drying of plants in patches",
+          "Hollowed stems near the root zone",
+          "Plants easily uprooted due to damaged roots",
+        ],
+        symptomsUr: [
+          "کھیت میں جگہ جگہ پودوں کا مرجھانا اور سوکھنا",
+          "جڑ کے قریب تنوں کا کھوکھلا ہونا",
+          "جڑیں خراب ہونے کی وجہ سے پودوں کا آسانی سے اکھڑ جانا",
+        ],
+        solutionsEn: [
+          "Apply recommended soil-applied insecticide (e.g. Chlorpyrifos) before sowing",
+          "Ensure proper field sanitation by removing crop residue and organic debris",
+          "Avoid water stress, as termite damage is worse in dry soil",
+        ],
+        solutionsUr: [
+          "بوائی سے پہلے تجویز کردہ مٹی میں ڈالی جانے والی کیڑے مار دوا (مثلاً کلورپائریفوس) استعمال کریں",
+          "فصل کی باقیات اور نامیاتی ملبہ ہٹا کر کھیت کی صفائی کو یقینی بنائیں",
+          "پانی کی کمی سے بچیں کیونکہ خشک مٹی میں دیمک کا نقصان زیادہ ہوتا ہے",
+        ],
+      },
     ],
-    article: {
+    articles: [
+     {
       categoryEn: "Field Crops",
       categoryUr: "میدانی فصلیں",
       titleEn: "Complete Guide to Wheat Cultivation",
@@ -122,7 +181,47 @@ const CROPS = [
             "گندم کی کٹائی اس وقت کریں جب فصل سنہری پیلی ہو جائے اور دانے سخت ہو جائیں، عام طور پر بوائی کے 120 سے 150 دن بعد۔ جلد کٹائی سے دانے کا وزن کم ہو جاتا ہے جبکہ دیر سے کٹائی سے دانے گرنے کا نقصان ہو سکتا ہے۔ کمبائن ہارویسٹر کے استعمال سے وقت اور مزدوری میں کافی کمی آتی ہے۔",
         },
       ],
-    },
+     },
+     {
+      categoryEn: "Field Crops",
+      categoryUr: "میدانی فصلیں",
+      titleEn: "Managing Pests & Diseases in Wheat",
+      titleUr: "گندم میں کیڑوں اور بیماریوں کا انتظام",
+      summaryEn:
+        "A practical guide to identifying and controlling the most common wheat pests and diseases before they affect yield.",
+      summaryUr:
+        "پیداوار متاثر ہونے سے پہلے گندم کے عام کیڑوں اور بیماریوں کی شناخت اور کنٹرول کا عملی رہنما۔",
+      readTimeMinutes: 4,
+      icon: "bug_report",
+      order: 4,
+      sections: [
+        {
+          headingEn: "Scouting Your Field Regularly",
+          headingUr: "کھیت کا باقاعدہ معائنہ",
+          bodyEn:
+            "Walk through the field at least twice a week during the vegetative and flowering stages, checking the undersides of leaves and stem bases for early signs of rust, aphids, or termite damage. Early detection makes treatment far more effective and affordable.",
+          bodyUr:
+            "نشوونما اور پھول آنے کے مراحل میں ہفتے میں کم از کم دو بار کھیت کا معائنہ کریں، پتوں کی نچلی سطح اور تنے کی جڑ کا جائزہ لیں تاکہ زنگ، تیلے یا دیمک کے نقصان کی ابتدائی علامات کا پتہ چل سکے۔ ابتدائی نشاندہی علاج کو زیادہ مؤثر اور کم خرچ بنا دیتی ہے۔",
+        },
+        {
+          headingEn: "Choosing the Right Treatment",
+          headingUr: "درست علاج کا انتخاب",
+          bodyEn:
+            "Match the treatment to the problem: fungicides for rust and smut, insecticides for aphids, and soil treatments for termites. Always follow label instructions for dose and timing, and rotate chemical groups to prevent resistance building up over seasons.",
+          bodyUr:
+            "مسئلے کے مطابق علاج کا انتخاب کریں: زنگ اور کانگیاری کے لیے فنجی سائیڈ، تیلے کے لیے کیڑے مار دوا، اور دیمک کے لیے مٹی کا علاج۔ ہمیشہ خوراک اور وقت کے لیے لیبل کی ہدایات پر عمل کریں اور موسموں کے دوران مزاحمت بننے سے بچنے کے لیے کیمیائی گروپس تبدیل کرتے رہیں۔",
+        },
+        {
+          headingEn: "Preventive Practices",
+          headingUr: "احتیاطی تدابیر",
+          bodyEn:
+            "Use certified, treated seed every season, rotate wheat with a non-cereal crop where possible, and avoid excess nitrogen which makes plants more attractive to pests and more susceptible to fungal disease.",
+          bodyUr:
+            "ہر موسم میں سرٹیفائیڈ اور علاج شدہ بیج استعمال کریں، جہاں ممکن ہو گندم کو غیر اناج والی فصل کے ساتھ ہمہ گیر کریں، اور نائٹروجن کا زیادہ استعمال نہ کریں کیونکہ اس سے پودے کیڑوں کے لیے زیادہ پرکشش اور پھپھوندی کے لیے زیادہ حساس ہو جاتے ہیں۔",
+        },
+      ],
+     },
+    ],
   },
   {
     slug: "rice",
@@ -192,8 +291,69 @@ const CROPS = [
           "لاروے کے خاتمے کے لیے کٹائی کے بعد باقیات کو ہٹا کر تلف کریں",
         ],
       },
+      {
+        order: 3,
+        nameEn: "Bacterial Leaf Blight",
+        nameUr: "بیکٹیریل جھلساؤ",
+        descriptionEn:
+          "A bacterial disease causing wilting and yellowing of rice leaves, spreading fast in warm, wet conditions.",
+        descriptionUr:
+          "ایک بیکٹیریل بیماری جو چاول کے پتوں کو مرجھا اور پیلا کر دیتی ہے، گرم اور نم موسم میں تیزی سے پھیلتی ہے۔",
+        symptomsEn: [
+          "Water-soaked streaks near leaf tips and margins",
+          "Yellowing and drying of leaves starting from the tip",
+          "Wilting of young seedlings in severe cases",
+        ],
+        symptomsUr: [
+          "پتوں کے کناروں اور نوک کے قریب پانی سے بھری لکیریں",
+          "پتوں کا نوک سے شروع ہو کر پیلا اور خشک ہونا",
+          "شدید حملے میں نوجوان پنیری کا مرجھا جانا",
+        ],
+        solutionsEn: [
+          "Use resistant rice varieties where available",
+          "Avoid excessive nitrogen fertilizer application",
+          "Apply copper-based bactericide as a preventive spray",
+          "Drain standing water if blight symptoms appear",
+        ],
+        solutionsUr: [
+          "جہاں ممکن ہو مزاحم چاول کی اقسام استعمال کریں",
+          "نائٹروجن کھاد کا زیادہ استعمال نہ کریں",
+          "احتیاطی تدبیر کے طور پر تانبے پر مبنی بیکٹیریا کش دوا کا اسپرے کریں",
+          "جھلساؤ کی علامات ظاہر ہونے پر کھڑا پانی نکال دیں",
+        ],
+      },
+      {
+        order: 4,
+        nameEn: "Rice Hispa",
+        nameUr: "چاول کا ہسپا کیڑا",
+        descriptionEn:
+          "A small beetle whose grubs mine inside leaves while adults scrape the leaf surface.",
+        descriptionUr:
+          "ایک چھوٹا بھونرا جس کے بچے پتوں کے اندر سرنگ بناتے ہیں جبکہ بالغ کیڑے پتوں کی سطح کھرچتے ہیں۔",
+        symptomsEn: [
+          "White, parallel streaks on leaves from surface scraping",
+          "Blotch-like mines visible inside leaf tissue",
+          "Overall whitish appearance of the field from a distance",
+        ],
+        symptomsUr: [
+          "سطح کھرچنے کی وجہ سے پتوں پر سفید متوازی لکیریں",
+          "پتوں کے اندر دھبے نما سرنگیں نظر آنا",
+          "دور سے کھیت کا مجموعی طور پر سفیدی مائل نظر آنا",
+        ],
+        solutionsEn: [
+          "Clip and destroy affected leaf tips in case of light infestation",
+          "Spray a recommended insecticide when infestation crosses threshold levels",
+          "Avoid excessive nitrogen use, which favors hispa buildup",
+        ],
+        solutionsUr: [
+          "ہلکے حملے کی صورت میں متاثرہ پتوں کی نوکیں کاٹ کر تلف کریں",
+          "حملہ حد سے بڑھ جانے پر تجویز کردہ کیڑے مار دوا کا اسپرے کریں",
+          "نائٹروجن کا زیادہ استعمال نہ کریں کیونکہ اس سے ہسپا کیڑے کی افزائش بڑھتی ہے",
+        ],
+      },
     ],
-    article: {
+    articles: [
+     {
       categoryEn: "Field Crops",
       categoryUr: "میدانی فصلیں",
       titleEn: "Best Practices for Rice Farming",
@@ -231,7 +391,47 @@ const CROPS = [
             "پہلے 20 سے 25 دنوں میں تجویز کردہ جڑی بوٹی مار ادویات یا ہاتھ سے گوڈی کے ذریعے جڑی بوٹیوں کو کنٹرول کریں۔ تنے کے سرنگ لگانے والے کیڑے اور جھلساؤ کی باقاعدگی سے نگرانی کریں اور پیداوار کے تحفظ کے لیے حملے کی پہلی علامت پر فوری علاج کریں۔",
         },
       ],
-    },
+     },
+     {
+      categoryEn: "Field Crops",
+      categoryUr: "میدانی فصلیں",
+      titleEn: "Managing Pests & Diseases in Rice",
+      titleUr: "چاول میں کیڑوں اور بیماریوں کا انتظام",
+      summaryEn:
+        "A field-tested approach to spotting and treating rice blast, bacterial blight, stem borer, and hispa early.",
+      summaryUr:
+        "چاول کے جھلساؤ، بیکٹیریل بلائٹ، تنے کے سرنگ لگانے والے کیڑے اور ہسپا کیڑے کی بروقت نشاندہی اور علاج کا آزمودہ طریقہ۔",
+      readTimeMinutes: 4,
+      icon: "bug_report",
+      order: 5,
+      sections: [
+        {
+          headingEn: "Water Management to Reduce Disease",
+          headingUr: "بیماری کم کرنے کے لیے پانی کا انتظام",
+          bodyEn:
+            "Avoid continuous deep flooding, which favors bacterial blight; alternate wetting and drying can reduce disease pressure while still meeting the crop's water needs.",
+          bodyUr:
+            "مسلسل گہرے پانی کھڑا رکھنے سے گریز کریں کیونکہ اس سے بیکٹیریل بلائٹ بڑھتا ہے؛ باری باری پانی دینا اور خشک کرنا فصل کی پانی کی ضرورت پوری کرتے ہوئے بیماری کا دباؤ کم کر سکتا ہے۔",
+        },
+        {
+          headingEn: "Balanced Fertilizer Use",
+          headingUr: "متوازن کھاد کا استعمال",
+          bodyEn:
+            "Excess nitrogen makes rice plants softer and more attractive to stem borer, hispa, and blast fungus. Split nitrogen doses across growth stages instead of applying it all at once.",
+          bodyUr:
+            "نائٹروجن کی زیادتی چاول کے پودوں کو نرم اور تنے کے کیڑے، ہسپا اور جھلساؤ کی پھپھوندی کے لیے زیادہ پرکشش بنا دیتی ہے۔ نائٹروجن کی خوراک ایک ہی بار دینے کے بجائے نشوونما کے مختلف مراحل میں تقسیم کریں۔",
+        },
+        {
+          headingEn: "Timely Chemical Control",
+          headingUr: "بروقت کیمیائی کنٹرول",
+          bodyEn:
+            "When pest or disease levels cross the recommended threshold, apply the specific fungicide or insecticide promptly, and avoid unnecessary blanket spraying that can harm natural predators like spiders and ladybird beetles.",
+          bodyUr:
+            "جب کیڑے یا بیماری کی سطح تجویز کردہ حد سے تجاوز کر جائے تو مخصوص فنجی سائیڈ یا کیڑے مار دوا فوری طور پر استعمال کریں، اور غیر ضروری عمومی اسپرے سے گریز کریں جو مکڑیوں اور لیڈی برڈ بیٹلز جیسے قدرتی شکاریوں کو نقصان پہنچا سکتا ہے۔",
+        },
+      ],
+     },
+    ],
   },
   {
     slug: "cotton",
@@ -299,8 +499,71 @@ const CROPS = [
           "نقصان کی حد تک پہنچنے پر تجویز کردہ کیڑے مار دوا کا استعمال کریں",
         ],
       },
+      {
+        order: 3,
+        nameEn: "Cotton Leaf Curl Virus",
+        nameUr: "کپاس کا پتہ مروڑ وائرس",
+        descriptionEn:
+          "A viral disease spread by whitefly, causing severe leaf curling and yield loss.",
+        descriptionUr:
+          "سفید مکھی کے ذریعے پھیلنے والی ایک وائرل بیماری جو پتوں کے شدید مڑنے اور پیداوار میں کمی کا باعث بنتی ہے۔",
+        symptomsEn: [
+          "Upward or downward curling of leaves",
+          "Thickened, dark green veins on the underside of leaves",
+          "Leaf-like outgrowths (enations) on the underside of leaves",
+          "Stunted plants with reduced boll formation",
+        ],
+        symptomsUr: [
+          "پتوں کا اوپر یا نیچے کی طرف مڑنا",
+          "پتوں کے نیچے موٹی اور گہری سبز رگیں",
+          "پتوں کے نیچے پتوں جیسی نشوونما (اینیشنز) کا بننا",
+          "پودوں کی نشوونما رک جانا اور ٹینڈوں کی تعداد کم ہونا",
+        ],
+        solutionsEn: [
+          "Grow virus-resistant cotton varieties",
+          "Control whitefly population early using yellow sticky traps and recommended insecticides",
+          "Remove and destroy infected plants promptly to reduce virus spread",
+          "Avoid planting cotton near vegetable crops that host whitefly",
+        ],
+        solutionsUr: [
+          "وائرس سے مزاحم کپاس کی اقسام کاشت کریں",
+          "پیلے چپچپا ٹریپس اور تجویز کردہ کیڑے مار ادویات سے سفید مکھی کی آبادی کو ابتدائی مرحلے میں کنٹرول کریں",
+          "وائرس کے پھیلاؤ کو کم کرنے کے لیے متاثرہ پودوں کو فوری طور پر ہٹا کر تلف کریں",
+          "کپاس کو ایسی سبزیوں کی فصلوں کے قریب نہ لگائیں جو سفید مکھی کی میزبانی کرتی ہیں",
+        ],
+      },
+      {
+        order: 4,
+        nameEn: "Cotton Aphid",
+        nameUr: "کپاس کا تیلا",
+        descriptionEn:
+          "Small sap-sucking insects that cluster on the underside of leaves, weakening plants.",
+        descriptionUr:
+          "چھوٹے رس چوسنے والے کیڑے جو پتوں کی نچلی سطح پر جمع ہو کر پودوں کو کمزور کرتے ہیں۔",
+        symptomsEn: [
+          "Curling and yellowing of leaves",
+          "Sticky honeydew on leaves and lint, reducing cotton quality",
+          "Sooty mold growth on affected leaves",
+        ],
+        symptomsUr: [
+          "پتوں کا مڑنا اور پیلا ہونا",
+          "پتوں اور روئی پر چپچپا میٹھا مادہ جو کپاس کے معیار کو کم کرتا ہے",
+          "متاثرہ پتوں پر کالی پھپھوندی کا اگنا",
+        ],
+        solutionsEn: [
+          "Conserve natural predators like ladybird beetles and lacewings",
+          "Spray neem oil or insecticidal soap for light infestations",
+          "Use a recommended systemic insecticide only when the economic threshold is reached",
+        ],
+        solutionsUr: [
+          "لیڈی برڈ بیٹل اور لیس ونگ جیسے قدرتی شکاریوں کو محفوظ رکھیں",
+          "ہلکے حملے کے لیے نیم کا تیل یا کیڑے مار صابن اسپرے کریں",
+          "معاشی نقصان کی حد تک پہنچنے پر ہی تجویز کردہ سسٹیمک کیڑے مار دوا استعمال کریں",
+        ],
+      },
     ],
-    article: {
+    articles: [
+     {
       categoryEn: "Cash Crops",
       categoryUr: "نقدی فصلیں",
       titleEn: "Cotton Farming: A Season-by-Season Guide",
@@ -338,7 +601,47 @@ const CROPS = [
             "سفید مکھی اور گلابی سنڈی کے لیے ہفتہ وار کھیت کا معائنہ کریں۔ ابتدائی نشاندہی کے لیے پیلے چپچپا ٹریپس اور فیرومون ٹریپس استعمال کریں، اور فائدہ مند کیڑوں کے تحفظ کے لیے تجویز کردہ کیڑے مار ادویات صرف اس وقت استعمال کریں جب کیڑوں کی سطح معاشی نقصان کی حد سے تجاوز کر جائے۔",
         },
       ],
-    },
+     },
+     {
+      categoryEn: "Cash Crops",
+      categoryUr: "نقدی فصلیں",
+      titleEn: "Managing Pests & Diseases in Cotton",
+      titleUr: "کپاس میں کیڑوں اور بیماریوں کا انتظام",
+      summaryEn:
+        "Practical steps to control whitefly, pink bollworm, leaf curl virus, and aphids throughout the cotton season.",
+      summaryUr:
+        "پورے کپاس کے سیزن میں سفید مکھی، گلابی سنڈی، پتہ مروڑ وائرس اور تیلے کو کنٹرول کرنے کے عملی اقدامات۔",
+      readTimeMinutes: 5,
+      icon: "bug_report",
+      order: 6,
+      sections: [
+        {
+          headingEn: "Early Season Vigilance",
+          headingUr: "سیزن کے آغاز میں چوکسی",
+          bodyEn:
+            "Whitefly and leaf curl virus establish early, so start monitoring from the seedling stage using yellow sticky traps, and remove any plant showing leaf curl symptoms immediately to slow virus spread.",
+          bodyUr:
+            "سفید مکھی اور پتہ مروڑ وائرس ابتدائی مرحلے میں ہی قائم ہو جاتے ہیں، اس لیے پنیری کے مرحلے سے ہی پیلے چپچپا ٹریپس کے ذریعے نگرانی شروع کریں اور پتہ مروڑ کی علامات ظاہر کرنے والے کسی بھی پودے کو فوری طور پر ہٹا دیں تاکہ وائرس کا پھیلاؤ سست ہو۔",
+        },
+        {
+          headingEn: "Pheromone Traps for Bollworm",
+          headingUr: "سنڈی کے لیے فیرومون ٹریپس",
+          bodyEn:
+            "Install pheromone traps at flowering to track pink bollworm moth activity, and time insecticide sprays based on trap catches rather than a fixed calendar schedule.",
+          bodyUr:
+            "پھول آنے کے مرحلے پر گلابی سنڈی کے پتنگوں کی سرگرمی جاننے کے لیے فیرومون ٹریپس نصب کریں، اور کیڑے مار دوا کا اسپرے مقررہ کیلنڈر کے بجائے ٹریپ میں پکڑے گئے پتنگوں کی تعداد کی بنیاد پر کریں۔",
+        },
+        {
+          headingEn: "End-of-Season Sanitation",
+          headingUr: "سیزن کے اختتام پر صفائی",
+          bodyEn:
+            "After the last picking, destroy crop stalks and residue promptly rather than leaving them in the field, since leftover stalks let pink bollworm and whitefly survive to infest the next season's crop.",
+          bodyUr:
+            "آخری چنائی کے بعد فصل کی ٹہنیوں اور باقیات کو کھیت میں چھوڑنے کے بجائے فوری طور پر تلف کریں، کیونکہ باقی رہ جانے والی ٹہنیاں گلابی سنڈی اور سفید مکھی کو اگلے سیزن کی فصل پر حملہ کرنے کے لیے زندہ رہنے دیتی ہیں۔",
+        },
+      ],
+     },
+    ],
   },
 ];
 
@@ -371,37 +674,44 @@ async function run() {
       console.log(`  ✔ disease: ${diseaseId}`);
     }
 
-    const articleId = `${crop.slug}_article`;
-    const a = crop.article;
-    await db.collection("learning_articles").doc(articleId).set({
-      categoryEn: a.categoryEn,
-      categoryUr: a.categoryUr,
-      titleEn: a.titleEn,
-      titleUr: a.titleUr,
-      summaryEn: a.summaryEn,
-      summaryUr: a.summaryUr,
-      readTimeMinutes: a.readTimeMinutes,
-      icon: a.icon,
-      order: a.order,
-    });
-    console.log(`  ✔ article: ${articleId}`);
-
-    for (let i = 0; i < a.sections.length; i++) {
-      const s = a.sections[i];
-      const sectionId = `${articleId}_section_${i + 1}`;
-      await db.collection("learning_article_sections").doc(sectionId).set({
-        articleId,
-        order: i + 1,
-        headingEn: s.headingEn,
-        headingUr: s.headingUr,
-        bodyEn: s.bodyEn,
-        bodyUr: s.bodyUr,
+    for (let j = 0; j < crop.articles.length; j++) {
+      const a = crop.articles[j];
+      // First article keeps its original id for backward compatibility with
+      // the earlier seed run; subsequent ones get a suffixed id.
+      const articleId =
+        j === 0 ? `${crop.slug}_article` : `${crop.slug}_article_${j + 1}`;
+      await db.collection("learning_articles").doc(articleId).set({
+        categoryEn: a.categoryEn,
+        categoryUr: a.categoryUr,
+        titleEn: a.titleEn,
+        titleUr: a.titleUr,
+        summaryEn: a.summaryEn,
+        summaryUr: a.summaryUr,
+        readTimeMinutes: a.readTimeMinutes,
+        icon: a.icon,
+        order: a.order,
       });
-      console.log(`    ✔ section: ${sectionId}`);
+      console.log(`  ✔ article: ${articleId}`);
+
+      for (let i = 0; i < a.sections.length; i++) {
+        const s = a.sections[i];
+        const sectionId = `${articleId}_section_${i + 1}`;
+        await db.collection("learning_article_sections").doc(sectionId).set({
+          articleId,
+          order: i + 1,
+          headingEn: s.headingEn,
+          headingUr: s.headingUr,
+          bodyEn: s.bodyEn,
+          bodyUr: s.bodyUr,
+        });
+        console.log(`    ✔ section: ${sectionId}`);
+      }
     }
   }
 
-  console.log("\nDone. Seeded 3 crops, 6 pests/diseases, 3 articles, 9 sections.");
+  console.log(
+    "\nDone. Seeded 3 crops, 12 pests/diseases, 6 articles, 18 sections."
+  );
 }
 
 run()
