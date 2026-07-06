@@ -1,25 +1,48 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    function isAdmin() {
-      return request.auth != null &&
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
-    }
-
-    match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
-    }
-
-    match /products/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Learning module: public read for the mobile app, writes only ever
+    // happen server-side via the admin backend's Firebase Admin SDK (which
+    // bypasses these rules), so client-side writes are fully locked out.
+    match /learning_crops/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /learning_crop_diseases/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /learning_articles/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /learning_article_sections/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
 

@@ -22,6 +22,26 @@ const Products = lazy(() =>
 const ProductForm = lazy(() =>
   import("./pages/ProductForm.jsx").then((m) => ({ default: m.ProductForm }))
 );
+const LearningCrops = lazy(() =>
+  import("./pages/LearningCrops.jsx").then((m) => ({ default: m.LearningCrops }))
+);
+const LearningCropForm = lazy(() =>
+  import("./pages/LearningCropForm.jsx").then((m) => ({ default: m.LearningCropForm }))
+);
+const CropDiseases = lazy(() =>
+  import("./pages/CropDiseases.jsx").then((m) => ({ default: m.CropDiseases }))
+);
+const CropDiseaseForm = lazy(() =>
+  import("./pages/CropDiseaseForm.jsx").then((m) => ({ default: m.CropDiseaseForm }))
+);
+const LearningArticles = lazy(() =>
+  import("./pages/LearningArticles.jsx").then((m) => ({ default: m.LearningArticles }))
+);
+const LearningArticleForm = lazy(() =>
+  import("./pages/LearningArticleForm.jsx").then((m) => ({
+    default: m.LearningArticleForm,
+  }))
+);
 const Admins = lazy(() =>
   import("./pages/Admins.jsx").then((m) => ({ default: m.Admins }))
 );
@@ -70,6 +90,15 @@ export default function App() {
             <Route path="products" element={<Products />} />
             <Route path="products/new" element={<ProductForm />} />
             <Route path="products/:id/edit" element={<ProductForm />} />
+            <Route path="learning/crops" element={<LearningCrops />} />
+            <Route path="learning/crops/new" element={<LearningCropForm />} />
+            <Route path="learning/crops/:id/edit" element={<LearningCropForm />} />
+            <Route path="learning/diseases" element={<CropDiseases />} />
+            <Route path="learning/diseases/new" element={<CropDiseaseForm />} />
+            <Route path="learning/diseases/:id/edit" element={<CropDiseaseForm />} />
+            <Route path="learning/articles" element={<LearningArticles />} />
+            <Route path="learning/articles/new" element={<LearningArticleForm />} />
+            <Route path="learning/articles/:id/edit" element={<LearningArticleForm />} />
             <Route
               path="admins"
               element={

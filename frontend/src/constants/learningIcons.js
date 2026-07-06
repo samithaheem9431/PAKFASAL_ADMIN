@@ -1,0 +1,17 @@
+export const LEARNING_ICONS = [
+  "grass",
+  "rice_bowl",
+  "cotton",
+  "spa",
+  "grass_outlined",
+  "eco",
+  "terrain",
+  "science",
+  "water_drop",
+  "cloud",
+  "storefront",
+  "account_balance",
+  "bug_report",
+  "agriculture",
+  "article",
+];

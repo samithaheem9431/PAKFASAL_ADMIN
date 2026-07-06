@@ -1,20 +1,35 @@
 import { Link } from "react-router-dom";
-import { Package } from "lucide-react";
+import { Package, Sprout, Bug, BookOpen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 
 export function Dashboard() {
-  const [productCount, setProductCount] = useState(null);
+  const [counts, setCounts] = useState({
+    products: null,
+    crops: null,
+    diseases: null,
+    articles: null,
+  });
   const [err, setErr] = useState(null);
 
   useEffect(() => {
     let cancel = false;
     (async () => {
       try {
-        const { data } = await api.get("/api/products");
+        const [p, cr, d, a] = await Promise.all([
+          api.get("/api/products"),
+          api.get("/api/learning-crops"),
+          api.get("/api/crop-diseases"),
+          api.get("/api/learning-articles"),
+        ]);
         if (cancel) return;
-        setProductCount(data.items?.length ?? 0);
+        setCounts({
+          products: p.data.items?.length ?? 0,
+          crops: cr.data.items?.length ?? 0,
+          diseases: d.data.items?.length ?? 0,
+          articles: a.data.items?.length ?? 0,
+        });
       } catch (e) {
         if (!cancel) setErr(e.message);
       }
@@ -23,6 +38,37 @@ export function Dashboard() {
       cancel = true;
     };
   }, []);
+
+  const cards = [
+    {
+      to: "/products",
+      label: "Products",
+      sub: "Marketplace catalog",
+      count: counts.products,
+      icon: Package,
+    },
+    {
+      to: "/learning/crops",
+      label: "Crops",
+      sub: "Keera aur Bimariyan crop list",
+      count: counts.crops,
+      icon: Sprout,
+    },
+    {
+      to: "/learning/diseases",
+      label: "Pests & diseases",
+      sub: "Symptoms & treatments",
+      count: counts.diseases,
+      icon: Bug,
+    },
+    {
+      to: "/learning/articles",
+      label: "Learning articles",
+      sub: "Guides & content",
+      count: counts.articles,
+      icon: BookOpen,
+    },
+  ];
 
   return (
     <div className="w-full min-w-0 max-w-full">
@@ -38,25 +84,28 @@ export function Dashboard() {
       )}
 
       <div className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-        <Link
-          to="/products"
-          className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-brand-300 hover:shadow-md sm:p-6"
-        >
-          <div className="flex items-start justify-between">
-            <div className="rounded-lg bg-brand-50 p-3 text-brand-700">
-              <Package className="h-6 w-6" />
+        {cards.map(({ to, label, sub, count, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-brand-300 hover:shadow-md sm:p-6"
+          >
+            <div className="flex items-start justify-between">
+              <div className="rounded-lg bg-brand-50 p-3 text-brand-700">
+                <Icon className="h-6 w-6" />
+              </div>
+              {count === null ? (
+                <Spinner className="h-6 w-6" />
+              ) : (
+                <span className="text-2xl font-bold text-slate-900">{count}</span>
+              )}
             </div>
-            {productCount === null ? (
-              <Spinner className="h-6 w-6" />
-            ) : (
-              <span className="text-2xl font-bold text-slate-900">{productCount}</span>
-            )}
-          </div>
-          <h2 className="mt-4 font-semibold text-slate-900 group-hover:text-brand-700">
-            Products
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">Marketplace catalog</p>
-        </Link>
+            <h2 className="mt-4 font-semibold text-slate-900 group-hover:text-brand-700">
+              {label}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">{sub}</p>
+          </Link>
+        ))}
       </div>
     </div>
   );

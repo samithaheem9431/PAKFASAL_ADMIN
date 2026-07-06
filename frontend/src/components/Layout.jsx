@@ -3,6 +3,9 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
+  Sprout,
+  Bug,
+  BookOpen,
   ShieldCheck,
   LogOut,
   Menu,
@@ -15,6 +18,9 @@ import { Spinner } from "./Spinner.jsx";
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/products", label: "Products", icon: Package },
+  { to: "/learning/crops", label: "Crops", icon: Sprout },
+  { to: "/learning/diseases", label: "Pests & Diseases", icon: Bug },
+  { to: "/learning/articles", label: "Learning Articles", icon: BookOpen },
 ];
 
 function sessionUntilLabel(iso) {

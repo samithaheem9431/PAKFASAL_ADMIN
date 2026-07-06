@@ -8,6 +8,10 @@ import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import uploadRoutes from "./routes/upload.js";
 import adminsRoutes from "./routes/admins.js";
+import learningCropsRoutes from "./routes/learningCrops.js";
+import cropDiseasesRoutes from "./routes/cropDiseases.js";
+import learningArticlesRoutes from "./routes/learningArticles.js";
+import articleSectionsRoutes from "./routes/articleSections.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -62,6 +66,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/admins", adminsRoutes);
+app.use("/api/learning-crops", learningCropsRoutes);
+app.use("/api/crop-diseases", cropDiseasesRoutes);
+app.use("/api/learning-articles", learningArticlesRoutes);
+app.use("/api/article-sections", articleSectionsRoutes);
 
 /**
  * Error handler

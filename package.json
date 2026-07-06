@@ -1,7 +1,7 @@
 {
   "name": "admin-pakfasal",
   "version": "1.0.0",
-  "description": "Admin web app for PakFasal marketplace.",
+  "description": "Admin web app for PakFasal (marketplace + Learning module).",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n BACKEND,FRONTEND -c blue,green \"npm --prefix backend run dev\" \"wait-on http://127.0.0.1:4000/health && npm --prefix frontend run dev\"",
