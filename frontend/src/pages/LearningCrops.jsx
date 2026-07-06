@@ -1,20 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, WifiOff } from "lucide-react";
 import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
+import { fetchWithCache, formatCacheTimestamp } from "../utils/offlineCache.js";
+
+const CACHE_KEY = "learning-crops";
 
 export function LearningCrops() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [offlineInfo, setOfflineInfo] = useState(null);
 
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/api/learning-crops");
-      setItems(data.items || []);
+      const { data, fromCache, cachedAt } = await fetchWithCache(CACHE_KEY, async () => {
+        const res = await api.get("/api/learning-crops");
+        return res.data.items || [];
+      });
+      setItems(data);
+      setOfflineInfo(fromCache ? { cachedAt } : null);
+      if (fromCache) {
+        toast(`You're offline — showing crops cached from ${formatCacheTimestamp(cachedAt)}`, {
+          icon: "📴",
+        });
+      }
     } catch (e) {
       toast.error(e.response?.data?.error || "Failed to load crops");
     } finally {
@@ -53,6 +66,13 @@ export function LearningCrops() {
           Add crop
         </Link>
       </div>
+
+      {offlineInfo && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 sm:text-sm">
+          <WifiOff className="h-4 w-4 shrink-0" />
+          Offline — showing data cached on {formatCacheTimestamp(offlineInfo.cachedAt)}
+        </div>
+      )}
 
       <div className="mt-6 overflow-x-auto overscroll-x-contain rounded-xl border border-slate-200 bg-white shadow-sm [-webkit-overflow-scrolling:touch]">
         {loading ? (

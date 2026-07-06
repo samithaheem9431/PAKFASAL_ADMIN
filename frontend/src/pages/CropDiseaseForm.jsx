@@ -6,6 +6,9 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
+import { fetchWithCache } from "../utils/offlineCache.js";
+
+const CROPS_CACHE_KEY = "learning-crops";
 
 function arrToText(arr) {
   return Array.isArray(arr) ? arr.join("\n") : "";
@@ -58,9 +61,15 @@ export function CropDiseaseForm() {
     let cancel = false;
     (async () => {
       try {
-        const { data } = await api.get("/api/learning-crops");
+        const { data, fromCache } = await fetchWithCache(CROPS_CACHE_KEY, async () => {
+          const res = await api.get("/api/learning-crops");
+          return res.data.items || [];
+        });
         if (cancel) return;
-        setCrops(data.items || []);
+        setCrops(data);
+        if (fromCache) {
+          toast("You're offline — showing cached crop list", { icon: "📴" });
+        }
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load crops");
       }
