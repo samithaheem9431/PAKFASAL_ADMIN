@@ -7,9 +7,6 @@ import { createSessionMiddleware } from "./config/session.js";
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
 import uploadRoutes from "./routes/upload.js";
-import cropsPestsRoutes from "./routes/cropsPests.js";
-import learningArticlesRoutes from "./routes/learningArticles.js";
-import cultivationRoutes from "./routes/cultivation.js";
 import adminsRoutes from "./routes/admins.js";
 
 const app = express();
@@ -64,9 +61,6 @@ app.get("/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/upload", uploadRoutes);
-app.use("/api/crops-pests", cropsPestsRoutes);
-app.use("/api/learning-articles", learningArticlesRoutes);
-app.use("/api", cultivationRoutes);
 app.use("/api/admins", adminsRoutes);
 
 /**

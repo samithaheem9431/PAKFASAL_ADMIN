@@ -1,7 +1,7 @@
 {
   "name": "admin-pakfasal",
   "version": "1.0.0",
-  "description": "Admin web app for PakFasal (marketplace + learning). The **Flutter app** continues to read Firestore directly for public data; **all admin mutations** go through the Node API using the Firebase Admin SDK.",
+  "description": "Admin web app for PakFasal marketplace.",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n BACKEND,FRONTEND -c blue,green \"npm --prefix backend run dev\" \"wait-on http://127.0.0.1:4000/health && npm --prefix frontend run dev\"",

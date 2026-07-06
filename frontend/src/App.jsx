@@ -22,24 +22,6 @@ const Products = lazy(() =>
 const ProductForm = lazy(() =>
   import("./pages/ProductForm.jsx").then((m) => ({ default: m.ProductForm }))
 );
-const LearningHome = lazy(() =>
-  import("./pages/LearningHome.jsx").then((m) => ({ default: m.LearningHome }))
-);
-const Articles = lazy(() =>
-  import("./pages/Articles.jsx").then((m) => ({ default: m.Articles }))
-);
-const ArticleForm = lazy(() =>
-  import("./pages/ArticleForm.jsx").then((m) => ({ default: m.ArticleForm }))
-);
-const Cultivation = lazy(() =>
-  import("./pages/Cultivation.jsx").then((m) => ({ default: m.Cultivation }))
-);
-const CropsDiseases = lazy(() =>
-  import("./pages/CropsDiseases.jsx").then((m) => ({ default: m.CropsDiseases }))
-);
-const CropsPestForm = lazy(() =>
-  import("./pages/CropsPestForm.jsx").then((m) => ({ default: m.CropsPestForm }))
-);
 const Admins = lazy(() =>
   import("./pages/Admins.jsx").then((m) => ({ default: m.Admins }))
 );
@@ -88,14 +70,6 @@ export default function App() {
             <Route path="products" element={<Products />} />
             <Route path="products/new" element={<ProductForm />} />
             <Route path="products/:id/edit" element={<ProductForm />} />
-            <Route path="learning" element={<LearningHome />} />
-            <Route path="learning/articles" element={<Articles />} />
-            <Route path="learning/articles/new" element={<ArticleForm />} />
-            <Route path="learning/articles/:id/edit" element={<ArticleForm />} />
-            <Route path="learning/cultivation" element={<Cultivation />} />
-            <Route path="crops-diseases" element={<CropsDiseases />} />
-            <Route path="crops-diseases/new" element={<CropsPestForm />} />
-            <Route path="crops-diseases/:id/edit" element={<CropsPestForm />} />
             <Route
               path="admins"
               element={

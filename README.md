@@ -1,6 +1,6 @@
 # PakFasal Admin
 
-Admin web app for PakFasal (marketplace + learning). The **Flutter app** continues to read Firestore directly for public data; **all admin mutations** go through the Node API using the Firebase Admin SDK.
+Admin web app for PakFasal marketplace. The **Flutter app** continues to read Firestore directly for public data; **all admin mutations** go through the Node API using the Firebase Admin SDK.
 
 ## Prerequisites
 
@@ -50,10 +50,6 @@ Deploy `firestore.rules` in the Firebase console (or with Firebase CLI). The adm
 | GET/POST | `/api/products` | List / create products |
 | PUT/DELETE | `/api/products/:id` | Update / soft-delete |
 | POST | `/api/upload` | Image upload (multipart `file`) |
-| GET/POST/PUT/DELETE | `/api/crops-pests` | Crops & diseases |
-| GET/POST/PUT/DELETE | `/api/learning-articles` | Learning articles |
-| GET/POST | `/api/crops` | List / create crop parent docs |
-| GET/POST/PUT/DELETE | `/api/crops/:cropId/stages/...` | Cultivation stage documents |
 
 ## Project layout
 
