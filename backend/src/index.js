@@ -6,7 +6,7 @@ import { createSessionMiddleware } from "./config/session.js";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
-import uploadRoutes from "./routes/upload.js";
+import uploadRoutes, { uploadsDir } from "./routes/upload.js";
 import adminsRoutes from "./routes/admins.js";
 import learningCropsRoutes from "./routes/learningCrops.js";
 import cropDiseasesRoutes from "./routes/cropDiseases.js";
@@ -47,6 +47,9 @@ app.use(createSessionMiddleware());
  * Body parser
  */
 app.use(express.json({ limit: "2mb" }));
+
+/** Public image files (multer disk uploads — free, no Firebase Storage) */
+app.use("/uploads", express.static(uploadsDir));
 
 /**
  * Health check

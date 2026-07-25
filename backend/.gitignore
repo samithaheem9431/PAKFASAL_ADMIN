@@ -67,6 +67,7 @@ coverage/
 # ------------------------------
 tmp/
 temp/
+uploads/
 
 # ------------------------------
 # Lock files (optional – keep ONE)
