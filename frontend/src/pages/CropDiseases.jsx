@@ -100,6 +100,7 @@ export function CropDiseases() {
           <table className="w-full min-w-[560px] text-left text-xs sm:min-w-[640px] sm:text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Image</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Crop</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Order</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Name (EN)</th>
@@ -110,6 +111,17 @@ export function CropDiseases() {
             <tbody>
               {items.map((d) => (
                 <tr key={d.id} className="border-b border-slate-100">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    {d.imageUrl ? (
+                      <img
+                        src={d.imageUrl}
+                        alt=""
+                        className="h-10 w-10 rounded object-cover"
+                      />
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">
                     {cropNameById.get(d.cropId) || d.cropId}
                   </td>

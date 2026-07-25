@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
-import { api } from "../services/api.js";
+import { api, uploadFile } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
 import { fetchWithCache } from "../utils/offlineCache.js";
 
@@ -41,8 +41,9 @@ export function CropDiseaseForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [crops, setCrops] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
-  const { register, control, handleSubmit, reset } = useForm({
+  const { register, control, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
       cropId: "",
       order: 0,
@@ -54,8 +55,11 @@ export function CropDiseaseForm() {
       symptomsUr: "",
       solutionsEn: "",
       solutionsUr: "",
+      imageUrl: "",
     },
   });
+
+  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     let cancel = false;
@@ -103,6 +107,7 @@ export function CropDiseaseForm() {
           symptomsUr: arrToText(d.symptomsUr),
           solutionsEn: arrToText(d.solutionsEn),
           solutionsUr: arrToText(d.solutionsUr),
+          imageUrl: d.imageUrl ?? "",
         });
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
@@ -115,6 +120,22 @@ export function CropDiseaseForm() {
       cancel = true;
     };
   }, [id, isNew, navigate, reset]);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { url } = await uploadFile(file);
+      setValue("imageUrl", url);
+      toast.success("Image uploaded");
+    } catch (err) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     const v = validateForm(data);
@@ -133,6 +154,7 @@ export function CropDiseaseForm() {
       symptomsUr: textToArr(data.symptomsUr),
       solutionsEn: textToArr(data.solutionsEn),
       solutionsUr: textToArr(data.solutionsUr),
+      imageUrl: (data.imageUrl || "").trim(),
     };
     try {
       if (isNew) {
@@ -286,6 +308,37 @@ export function CropDiseaseForm() {
               {...register("solutionsUr")}
             />
           </div>
+        </div>
+
+        <div>
+          <p className="mb-2 text-sm font-medium">Image (optional)</p>
+          {imageUrl ? (
+            <div className="relative mb-2 inline-block">
+              <img
+                src={imageUrl}
+                alt=""
+                className="h-28 w-28 rounded-lg border border-slate-200 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setValue("imageUrl", "")}
+                className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">
+            <Upload className="h-4 w-4" />
+            {uploading ? "Uploading…" : imageUrl ? "Replace image" : "Upload image"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onFile}
+              disabled={uploading}
+            />
+          </label>
         </div>
 
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">

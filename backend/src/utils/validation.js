@@ -138,6 +138,7 @@ export function normalizeCropDisease(body) {
     symptomsUr: toStringArray(body.symptomsUr),
     solutionsEn: toStringArray(body.solutionsEn),
     solutionsUr: toStringArray(body.solutionsUr),
+    imageUrl: String(body.imageUrl ?? "").trim(),
   };
 }
 
