@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { api } from "../services/api.js";
+import { api, uploadFile } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
 import { clearCache } from "../utils/offlineCache.js";
-import { auth } from "../services/firebase.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 function validateForm(data) {
   if (!data.nameEn?.trim()) return "Name (English) is required.";
@@ -19,51 +17,14 @@ function validateForm(data) {
   return null;
 }
 
-async function saveCrop({ isNew, id, body, file }) {
-  const user = auth.currentUser;
-  if (!user) throw new Error("User not authenticated");
-  const token = await user.getIdToken();
-
-  const formData = new FormData();
-  formData.append("nameEn", body.nameEn);
-  formData.append("nameUr", body.nameUr);
-  formData.append("icon", body.icon || "agriculture");
-  formData.append("order", String(body.order));
-  formData.append("showInPests", String(!!body.showInPests));
-  // Always send so backend can clear or keep the URL
-  formData.append("imageUrl", body.imageUrl || "");
-  if (isNew) formData.append("id", body.id);
-  if (file) formData.append("file", file);
-
-  const url = isNew
-    ? `${baseURL}/api/learning-crops`
-    : `${baseURL}/api/learning-crops/${id}`;
-
-  const response = await fetch(url, {
-    method: isNew ? "POST" : "PUT",
-    credentials: "include",
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
-  });
-
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const msg =
-      data.errors?.join?.(", ") || data.error || "Save failed";
-    throw new Error(msg);
-  }
-  return data;
-}
-
 export function LearningCropForm() {
   const { id } = useParams();
   const isNew = !id || id === "new";
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
-  const [pendingFile, setPendingFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -74,14 +35,6 @@ export function LearningCropForm() {
       showInPests: true,
     },
   });
-
-  useEffect(() => {
-    return () => {
-      if (previewUrl && previewUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   useEffect(() => {
     if (isNew) return;
@@ -104,8 +57,6 @@ export function LearningCropForm() {
           showInPests: c.showInPests !== false,
         });
         setImageUrl(c.imageUrl ?? "");
-        setPreviewUrl(c.imageUrl ?? "");
-        setPendingFile(null);
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -118,7 +69,7 @@ export function LearningCropForm() {
     };
   }, [id, isNew, navigate, reset]);
 
-  const onFile = (e) => {
+  const onFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
@@ -126,20 +77,18 @@ export function LearningCropForm() {
       toast.error("Only JPEG, PNG, GIF, WebP allowed");
       return;
     }
-    if (previewUrl && previewUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
+    setUploading(true);
+    try {
+      const res = await uploadFile(file);
+      const url = res?.url;
+      if (!url) throw new Error("Upload succeeded but no URL returned");
+      setImageUrl(url);
+      toast.success("Image uploaded — now click Save");
+    } catch (err) {
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
     }
-    setPendingFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
-
-  const clearImage = () => {
-    if (previewUrl && previewUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPendingFile(null);
-    setPreviewUrl("");
-    setImageUrl("");
   };
 
   const onSubmit = async (data) => {
@@ -154,28 +103,36 @@ export function LearningCropForm() {
       return;
     }
 
+    // JSON body — works with current Render API (multipart FormData was empty there)
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
       icon: "agriculture",
       order: Number(data.order),
-      showInPests: !!data.showInPests,
-      // keep existing Cloudinary URL unless user cleared or picked a new file
-      imageUrl: pendingFile ? "" : imageUrl,
+      showInPests: Boolean(data.showInPests),
+      imageUrl: (imageUrl || "").trim(),
     };
-    if (isNew) body.id = slug;
 
     setSaving(true);
     try {
-      await saveCrop({ isNew, id, body, file: pendingFile });
-      trackEvent(isNew ? "admin_learning_crop_create" : "admin_learning_crop_update", {
-        crop_id: isNew ? slug : id,
-      });
-      toast.success(isNew ? "Crop created" : "Crop updated");
+      if (isNew) {
+        body.id = slug;
+        await api.post("/api/learning-crops", body);
+        trackEvent("admin_learning_crop_create", { crop_id: slug });
+        toast.success("Crop created");
+      } else {
+        await api.put(`/api/learning-crops/${id}`, body);
+        trackEvent("admin_learning_crop_update", { crop_id: id });
+        toast.success("Crop updated");
+      }
       clearCache("learning-crops");
       navigate("/learning/crops");
     } catch (e) {
-      toast.error(e.message || "Save failed");
+      const msg =
+        e.response?.data?.errors?.join?.(", ") ||
+        e.response?.data?.error ||
+        e.message;
+      toast.error(msg || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -188,8 +145,6 @@ export function LearningCropForm() {
       </div>
     );
   }
-
-  const shownImage = previewUrl || imageUrl;
 
   return (
     <div className="w-full min-w-0 max-w-full">
@@ -251,16 +206,16 @@ export function LearningCropForm() {
 
         <div>
           <p className="mb-2 text-sm font-medium">Crop image</p>
-          {shownImage ? (
+          {imageUrl ? (
             <div className="relative mb-2 inline-block">
               <img
-                src={shownImage}
+                src={imageUrl}
                 alt=""
                 className="h-28 w-28 rounded-lg border border-slate-200 object-cover"
               />
               <button
                 type="button"
-                onClick={clearImage}
+                onClick={() => setImageUrl("")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×
@@ -269,21 +224,17 @@ export function LearningCropForm() {
           ) : null}
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm hover:bg-slate-50">
             <Upload className="h-4 w-4" />
-            {pendingFile
-              ? pendingFile.name
-              : shownImage
-                ? "Replace image"
-                : "Choose image"}
+            {uploading ? "Uploading…" : imageUrl ? "Replace image" : "Upload image"}
             <input
               type="file"
               accept="image/jpeg,image/png,image/gif,image/webp"
               className="hidden"
               onChange={onFile}
-              disabled={saving}
+              disabled={uploading || saving}
             />
           </label>
           <p className="mt-1 text-xs text-slate-500">
-            Image uploads to Cloudinary when you click Save, then the URL is stored in Firestore.
+            1) Upload image 2) Wait for success toast 3) Click Save
           </p>
         </div>
 
@@ -295,7 +246,7 @@ export function LearningCropForm() {
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || uploading}
             className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:order-1 sm:w-auto"
           >
             {saving ? "Saving…" : "Save"}

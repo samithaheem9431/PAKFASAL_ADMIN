@@ -68,26 +68,40 @@ export function validateLearningCrop(body) {
   const errors = [];
   if (!hasText(body.nameEn)) errors.push("Name (English) is required");
   if (!hasText(body.nameUr)) errors.push("Name (Urdu) is required");
-  if (typeof body.order !== "number" || Number.isNaN(body.order)) {
+  const order = Number(body.order);
+  if (Number.isNaN(order)) {
     errors.push("Order must be a number");
   }
-  if (typeof body.showInPests !== "boolean") {
+  // Accept boolean or "true"/"false" strings (multipart)
+  const pests = body.showInPests;
+  const pestsOk =
+    typeof pests === "boolean" ||
+    pests === "true" ||
+    pests === "false" ||
+    pests === "1" ||
+    pests === "0";
+  if (!pestsOk) {
     errors.push("showInPests must be true or false");
   }
   return errors;
 }
 
 export function normalizeLearningCrop(body) {
+  let showInPests = body.showInPests;
+  if (typeof showInPests === "string") {
+    showInPests = showInPests === "true" || showInPests === "1";
+  }
   const doc = {
     nameEn: String(body.nameEn ?? "").trim(),
     nameUr: String(body.nameUr ?? "").trim(),
     order: Number(body.order),
-    showInPests: Boolean(body.showInPests),
+    showInPests: Boolean(showInPests),
     imageUrl: String(body.imageUrl ?? "").trim(),
+    icon:
+      typeof body.icon === "string" && LEARNING_ICONS.includes(body.icon)
+        ? body.icon
+        : "agriculture",
   };
-  if (typeof body.icon === "string" && LEARNING_ICONS.includes(body.icon)) {
-    doc.icon = body.icon;
-  }
   return doc;
 }
 
