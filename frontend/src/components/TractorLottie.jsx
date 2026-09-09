@@ -8,12 +8,85 @@ import fallbackAnimation from "../assets/lottie/tractor.json";
  * 2) LottieFiles “Tractor Animation” (Mohit) — proper tractor
  * 3) LottieFiles “Wheat in Wind” — فصل / crop feel
  * 4) Bundled fallback if CDN is blocked (offline / firewall)
- * Road strip sits under the Lottie so the tractor reads as driving.
+ * Road strip + SVG farmer overlay sit with the Lottie so it reads as driving.
  */
 const TRACTOR_DOTLOTTIE =
   "https://assets-v2.lottiefiles.com/a/e3b38514-1150-11ee-9dde-3789514b5871/ZNdbOpdPyr.lottie";
 const WHEAT_FASAL_DOTLOTTIE =
   "https://assets-v2.lottiefiles.com/a/fa3519dc-1179-11ee-9c25-7327e7ecf09c/nfp5owc8Aq.lottie";
+
+function TractorFarmer() {
+  return (
+    <svg
+      className="tractor-farmer pointer-events-none absolute z-[1]"
+      viewBox="0 0 72 90"
+      aria-hidden
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="farmerSkin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffcc80" />
+          <stop offset="100%" stopColor="#e0a060" />
+        </linearGradient>
+      </defs>
+
+      {/* Legs in seat */}
+      <path d="M28 58 C32 70 38 78 48 80 L52 62 Z" fill="#4e342e" />
+      <path d="M34 60 C38 72 42 78 50 79 L54 64 Z" fill="#3e2723" opacity="0.55" />
+
+      {/* Torso / kurta */}
+      <path
+        d="M26 34 C30 24 44 22 52 28 C56 34 55 48 50 56 L28 58 C24 50 22 40 26 34 Z"
+        fill="#ef6c00"
+      />
+      <path d="M32 36 H48 V50 H32 Z" fill="#e65100" opacity="0.35" />
+
+      {/* Arms toward steering */}
+      <path
+        d="M48 40 C58 38 64 46 68 56"
+        fill="none"
+        stroke="#ffb74d"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M32 44 C42 48 54 54 66 58"
+        fill="none"
+        stroke="#ffcc80"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+      />
+      <circle cx="68" cy="56" r="4" fill="#ffb74d" />
+      <circle cx="65" cy="58" r="3.5" fill="#ffcc80" />
+
+      {/* Neck + head */}
+      <rect x="38" y="24" width="8" height="10" rx="2" fill="#ffcc80" />
+      <circle cx="42" cy="18" r="11" fill="url(#farmerSkin)" />
+      <ellipse cx="32" cy="19" rx="2.2" ry="2.8" fill="#e0a060" />
+
+      {/* Cap / topi */}
+      <path d="M30 14 C34 4 52 4 54 14 L54 18 H30 Z" fill="#1565c0" />
+      <ellipse cx="54" cy="16.5" rx="7.5" ry="2.8" fill="#0d47a1" />
+
+      {/* Face */}
+      <path
+        d="M42 15 H50"
+        stroke="#5d4037"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+      <circle cx="46" cy="18.5" r="1.4" fill="#3e2723" />
+      <circle cx="46.5" cy="18" r="0.45" fill="#fff" />
+      <path
+        d="M43 22.5 Q47 25 51 22"
+        fill="none"
+        stroke="#6d4c41"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function TractorRoad() {
   return (
@@ -40,11 +113,7 @@ function TractorRoad() {
         d="M0 18 C40 10 80 22 120 14 C160 6 200 20 240 12 C280 4 320 18 360 10 C380 6 400 12 400 12 V28 H0 Z"
         fill="url(#roadGrass)"
       />
-      <path
-        d="M0 40 H400 V56 H0 Z"
-        fill="#558b2f"
-        opacity="0.9"
-      />
+      <path d="M0 40 H400 V56 H0 Z" fill="#558b2f" opacity="0.9" />
 
       {/* Dirt road bed */}
       <path
@@ -106,6 +175,7 @@ export function TractorLottie({ className = "" }) {
   const [useBundled, setUseBundled] = useState(false);
 
   const src = sources[index];
+  const showFarmer = useBundled || src !== WHEAT_FASAL_DOTLOTTIE;
 
   const handleDotLottie = (instance) => {
     if (!instance) return;
@@ -128,28 +198,31 @@ export function TractorLottie({ className = "" }) {
 
   return (
     <div className={`flex flex-col items-center justify-center ${className}`}>
-      {!useBundled ? (
-        <DotLottieReact
-          key={`${src}-${index}`}
-          src={src}
-          loop
-          autoplay
-          dotLottieRefCallback={handleDotLottie}
-          className={lottieClass}
-          style={{ width: "100%" }}
-          aria-hidden
-        />
-      ) : (
-        <DotLottieReact
-          key="bundled-fallback"
-          data={JSON.stringify(fallbackAnimation)}
-          loop
-          autoplay
-          className={lottieClass}
-          style={{ width: "100%" }}
-          aria-hidden
-        />
-      )}
+      <div className={`relative ${lottieClass}`}>
+        {!useBundled ? (
+          <DotLottieReact
+            key={`${src}-${index}`}
+            src={src}
+            loop
+            autoplay
+            dotLottieRefCallback={handleDotLottie}
+            className="h-full w-full"
+            style={{ width: "100%", height: "100%" }}
+            aria-hidden
+          />
+        ) : (
+          <DotLottieReact
+            key="bundled-fallback"
+            data={JSON.stringify(fallbackAnimation)}
+            loop
+            autoplay
+            className="h-full w-full"
+            style={{ width: "100%", height: "100%" }}
+            aria-hidden
+          />
+        )}
+        {showFarmer ? <TractorFarmer /> : null}
+      </div>
       <TractorRoad />
     </div>
   );

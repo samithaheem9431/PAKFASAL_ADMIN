@@ -39,12 +39,33 @@ body {
   }
 }
 
+@keyframes tractor-farmer-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(2px);
+  }
+}
+
 .tractor-road__scroll {
   animation: tractor-road-scroll 5.5s linear infinite;
 }
 
+/* Seat area on typical side-view tractor Lottie */
+.tractor-farmer {
+  top: 28%;
+  left: 38%;
+  width: 22%;
+  max-width: 78px;
+  height: auto;
+  animation: tractor-farmer-bounce 0.7s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tractor-road__scroll {
+  .tractor-road__scroll,
+  .tractor-farmer {
     animation: none;
   }
 }
