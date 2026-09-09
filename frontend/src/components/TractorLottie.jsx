@@ -18,7 +18,7 @@ const WHEAT_FASAL_DOTLOTTIE =
 function TractorRoad() {
   return (
     <svg
-      className="tractor-road -mt-8 w-full max-w-[360px] md:-mt-10 md:max-w-[400px]"
+      className="tractor-road -mt-12 w-full max-w-[360px] md:-mt-14 md:max-w-[400px]"
       viewBox="0 0 400 56"
       aria-hidden
       xmlns="http://www.w3.org/2000/svg"
