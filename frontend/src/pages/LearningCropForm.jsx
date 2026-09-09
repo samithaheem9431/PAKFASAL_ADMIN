@@ -22,19 +22,18 @@ export function LearningCropForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
+  // Own state — do not rely on RHF hidden fields for imageUrl persistence.
+  const [imageUrl, setImageUrl] = useState("");
 
-  const { register, handleSubmit, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       slug: "",
       nameEn: "",
       nameUr: "",
       order: 0,
       showInPests: true,
-      imageUrl: "",
     },
   });
-
-  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     if (isNew) return;
@@ -55,8 +54,8 @@ export function LearningCropForm() {
           nameUr: c.nameUr ?? "",
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
-          imageUrl: c.imageUrl ?? "",
         });
+        setImageUrl(String(c.imageUrl ?? "").trim());
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -76,10 +75,19 @@ export function LearningCropForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("imageUrl", url, { shouldDirty: true, shouldValidate: true });
-      toast.success("Image uploaded");
+      const uploaded = String(url ?? "").trim();
+      if (!uploaded) throw new Error("Upload returned empty URL");
+      setImageUrl(uploaded);
+
+      // Edit mode: write Firestore immediately so URL is not lost if Save is skipped.
+      if (!isNew) {
+        await api.put(`/api/learning-crops/${id}/image`, { imageUrl: uploaded });
+        toast.success("Image saved to Firestore");
+      } else {
+        toast.success("Image uploaded — click Save to finish");
+      }
     } catch (err) {
-      toast.error(err.message || "Upload failed");
+      toast.error(err.response?.data?.error || err.message || "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -99,11 +107,10 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
-      // Backend defaults this; send explicitly so old deployed APIs also accept.
       icon: "eco",
       order: Number(data.order),
       showInPests: !!data.showInPests,
-      imageUrl: (imageUrl || data.imageUrl || "").trim(),
+      imageUrl: imageUrl.trim(),
     };
     try {
       if (isNew) {
@@ -189,8 +196,6 @@ export function LearningCropForm() {
           />
         </div>
 
-        <input type="hidden" {...register("imageUrl")} />
-
         <div>
           <p className="mb-2 text-sm font-medium">Crop image (optional)</p>
           {imageUrl ? (
@@ -202,7 +207,7 @@ export function LearningCropForm() {
               />
               <button
                 type="button"
-                onClick={() => setValue("imageUrl", "")}
+                onClick={() => setImageUrl("")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×
@@ -220,6 +225,9 @@ export function LearningCropForm() {
               disabled={uploading}
             />
           </label>
+          {imageUrl ? (
+            <p className="mt-2 break-all text-xs text-slate-500">{imageUrl}</p>
+          ) : null}
         </div>
 
         <label className="flex items-center gap-2 text-sm">

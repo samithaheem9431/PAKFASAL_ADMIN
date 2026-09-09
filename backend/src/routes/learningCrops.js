@@ -3,6 +3,7 @@ import {
   listLearningCrops,
   createLearningCrop,
   updateLearningCrop,
+  updateLearningCropImage,
   deleteLearningCrop,
 } from "../controllers/learningCropController.js";
 import { adminAuth } from "../middleware/adminAuth.js";
@@ -12,6 +13,7 @@ r.use(adminAuth);
 
 r.get("/", listLearningCrops);
 r.post("/", createLearningCrop);
+r.put("/:id/image", updateLearningCropImage);
 r.put("/:id", updateLearningCrop);
 r.delete("/:id", deleteLearningCrop);
 
