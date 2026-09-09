@@ -4,9 +4,32 @@ import {
   validateLearningCrop,
   normalizeLearningCrop,
 } from "../utils/validation.js";
+import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
 
 const db = () => admin.firestore();
 const col = () => db().collection("learning_crops");
+
+/** multipart fields arrive as strings — coerce before validate/normalize */
+function coerceCropBody(raw = {}) {
+  const order = Number(raw.order);
+  let showInPests = raw.showInPests;
+  if (typeof showInPests === "string") {
+    showInPests = showInPests === "true" || showInPests === "1";
+  }
+  return {
+    ...raw,
+    order,
+    showInPests: Boolean(showInPests),
+    imageUrl: String(raw.imageUrl ?? "").trim(),
+  };
+}
+
+async function resolveImageUrl(body, file) {
+  if (file) {
+    return uploadBufferToCloudinary(file);
+  }
+  return String(body.imageUrl ?? "").trim();
+}
 
 export async function listLearningCrops(req, res) {
   try {
@@ -23,7 +46,7 @@ export async function listLearningCrops(req, res) {
 
 export async function createLearningCrop(req, res) {
   try {
-    const body = req.body || {};
+    const body = coerceCropBody(req.body || {});
     const slug = String(body.id ?? "").trim().toLowerCase();
     const slugErr = validateCropSlug(slug);
     if (slugErr) return res.status(400).json({ errors: [slugErr] });
@@ -39,11 +62,19 @@ export async function createLearningCrop(req, res) {
         .json({ errors: ["A crop with this ID already exists"] });
     }
 
-    const doc = normalizeLearningCrop(body);
-    // Always persist imageUrl explicitly
-    doc.imageUrl = String(body.imageUrl ?? "").trim();
+    let imageUrl = "";
+    try {
+      imageUrl = await resolveImageUrl(body, req.file);
+    } catch (upErr) {
+      return res.status(400).json({ errors: [upErr.message || "Upload failed"] });
+    }
+
+    const doc = {
+      ...normalizeLearningCrop(body),
+      imageUrl,
+    };
     await ref.set(doc);
-    console.log("createLearningCrop", slug, "imageUrl=", doc.imageUrl || "(empty)");
+    console.log("createLearningCrop saved", slug, "imageUrl=", imageUrl || "(empty)");
     res.status(201).json({ id: slug, ...doc });
   } catch (err) {
     console.error("createLearningCrop", err);
@@ -54,7 +85,7 @@ export async function createLearningCrop(req, res) {
 export async function updateLearningCrop(req, res) {
   try {
     const { id } = req.params;
-    const body = req.body || {};
+    const body = coerceCropBody(req.body || {});
     const errs = validateLearningCrop(body);
     if (errs.length) return res.status(400).json({ errors: errs });
 
@@ -64,38 +95,28 @@ export async function updateLearningCrop(req, res) {
       return res.status(404).json({ error: "Crop not found" });
     }
 
-    const doc = normalizeLearningCrop(body);
-    doc.imageUrl = String(body.imageUrl ?? "").trim();
+    let imageUrl = "";
+    try {
+      imageUrl = await resolveImageUrl(body, req.file);
+    } catch (upErr) {
+      return res.status(400).json({ errors: [upErr.message || "Upload failed"] });
+    }
+
+    // No new file and no imageUrl field in body → keep existing URL
+    if (!req.file && !Object.prototype.hasOwnProperty.call(req.body || {}, "imageUrl")) {
+      imageUrl = String(existing.data()?.imageUrl ?? "").trim();
+    }
+
+    const doc = {
+      ...normalizeLearningCrop(body),
+      imageUrl,
+    };
     await ref.set(doc, { merge: true });
-    // Second write so imageUrl cannot be dropped by older deploy quirks
-    await ref.update({ imageUrl: doc.imageUrl });
-    console.log("updateLearningCrop", id, "imageUrl=", doc.imageUrl || "(empty)");
+    console.log("updateLearningCrop saved", id, "imageUrl=", imageUrl || "(empty)");
     res.json({ id, ...doc });
   } catch (err) {
     console.error("updateLearningCrop", err);
     res.status(500).json({ error: "Failed to update crop" });
-  }
-}
-
-/** Dedicated image-only update — minimal payload, always writes imageUrl */
-export async function updateLearningCropImage(req, res) {
-  try {
-    const { id } = req.params;
-    const imageUrl = String(req.body?.imageUrl ?? "").trim();
-    if (!imageUrl) {
-      return res.status(400).json({ error: "imageUrl is required" });
-    }
-    const ref = col().doc(id);
-    const existing = await ref.get();
-    if (!existing.exists) {
-      return res.status(404).json({ error: "Crop not found" });
-    }
-    await ref.set({ imageUrl }, { merge: true });
-    console.log("updateLearningCropImage", id, imageUrl);
-    res.json({ id, imageUrl });
-  } catch (err) {
-    console.error("updateLearningCropImage", err);
-    res.status(500).json({ error: "Failed to save image URL" });
   }
 }
 

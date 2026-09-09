@@ -100,19 +100,11 @@ export function LearningCrops() {
                       <img
                         src={c.imageUrl}
                         alt=""
-                        className="h-10 w-10 rounded object-cover bg-slate-100"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                          const fallback = e.currentTarget.nextElementSibling;
-                          if (fallback) fallback.classList.remove("hidden");
-                        }}
+                        className="h-10 w-10 rounded object-cover"
                       />
-                    ) : null}
-                    <span
-                      className={`text-slate-400 ${c.imageUrl ? "hidden" : ""}`}
-                    >
-                      —
-                    </span>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">{c.order}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600 sm:px-4 sm:py-3">{c.id}</td>

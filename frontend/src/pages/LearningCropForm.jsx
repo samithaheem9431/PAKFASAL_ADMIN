@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
-import { clearCache } from "../utils/offlineCache.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
@@ -23,18 +22,19 @@ export function LearningCropForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
 
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
       slug: "",
       nameEn: "",
       nameUr: "",
       order: 0,
       showInPests: true,
+      imageUrl: "",
     },
   });
+
+  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     if (isNew) return;
@@ -55,8 +55,8 @@ export function LearningCropForm() {
           nameUr: c.nameUr ?? "",
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
+          imageUrl: c.imageUrl ?? "",
         });
-        setImageUrl(c.imageUrl ?? "");
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -73,19 +73,12 @@ export function LearningCropForm() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (!/^image\/(jpeg|png|gif|webp)$/i.test(file.type)) {
-      toast.error("Only JPEG, PNG, GIF, WebP allowed");
-      return;
-    }
     setUploading(true);
     try {
-      const res = await uploadFile(file);
-      const url = res?.url;
-      if (!url) throw new Error("Upload succeeded but no URL returned");
-      setImageUrl(url);
-      toast.success("Image uploaded — now click Save");
+      const { url } = await uploadFile(file);
+      setValue("imageUrl", url);
+      toast.success("Image uploaded");
     } catch (err) {
-      setImageUrl("");
       toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
@@ -103,51 +96,28 @@ export function LearningCropForm() {
       toast.error(v);
       return;
     }
-
-    const url = (imageUrl || "").trim();
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
-      icon: "agriculture",
       order: Number(data.order),
-      showInPests: Boolean(data.showInPests),
-      imageUrl: url,
+      showInPests: !!data.showInPests,
+      imageUrl: (data.imageUrl || "").trim(),
     };
-
-    setSaving(true);
     try {
-      let cropId = id;
       if (isNew) {
         body.id = slug;
-        cropId = slug;
-        const created = await api.post("/api/learning-crops", body);
-        if (url && !created.data?.imageUrl) {
-          await api.put(`/api/learning-crops/${cropId}/image`, { imageUrl: url });
-        }
+        await api.post("/api/learning-crops", body);
         trackEvent("admin_learning_crop_create", { crop_id: slug });
-        toast.success(url ? "Crop + image saved" : "Crop created");
+        toast.success("Crop created");
       } else {
-        const updated = await api.put(`/api/learning-crops/${id}`, body);
-        // Dedicated image write — guarantees Firestore gets the URL
-        if (url) {
-          await api.put(`/api/learning-crops/${id}/image`, { imageUrl: url });
-        }
-        if (url && !(updated.data?.imageUrl || url)) {
-          toast.error("Crop saved but image URL may be missing on server");
-        }
+        await api.put(`/api/learning-crops/${id}`, body);
         trackEvent("admin_learning_crop_update", { crop_id: id });
-        toast.success(url ? "Crop + image saved" : "Crop updated");
+        toast.success("Crop updated");
       }
-      clearCache("learning-crops");
       navigate("/learning/crops");
     } catch (e) {
-      const msg =
-        e.response?.data?.errors?.join?.(", ") ||
-        e.response?.data?.error ||
-        e.message;
+      const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;
       toast.error(msg || "Save failed");
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -218,7 +188,7 @@ export function LearningCropForm() {
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium">Crop image</p>
+          <p className="mb-2 text-sm font-medium">Crop image (optional)</p>
           {imageUrl ? (
             <div className="relative mb-2 inline-block">
               <img
@@ -228,7 +198,7 @@ export function LearningCropForm() {
               />
               <button
                 type="button"
-                onClick={() => setImageUrl("")}
+                onClick={() => setValue("imageUrl", "")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×
@@ -240,19 +210,12 @@ export function LearningCropForm() {
             {uploading ? "Uploading…" : imageUrl ? "Replace image" : "Upload image"}
             <input
               type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
+              accept="image/*"
               className="hidden"
               onChange={onFile}
-              disabled={uploading || saving}
+              disabled={uploading}
             />
           </label>
-          {imageUrl ? (
-            <p className="mt-1 break-all text-xs text-green-700">URL ready: {imageUrl}</p>
-          ) : (
-            <p className="mt-1 text-xs text-slate-500">
-              Upload first (wait for success), then Save — URL must appear above before Save.
-            </p>
-          )}
         </div>
 
         <label className="flex items-center gap-2 text-sm">
@@ -263,10 +226,9 @@ export function LearningCropForm() {
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            disabled={saving || uploading}
-            className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:order-1 sm:w-auto"
+            className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 sm:order-1 sm:w-auto"
           >
-            {saving ? "Saving…" : "Save"}
+            Save
           </button>
           <Link
             to="/learning/crops"
