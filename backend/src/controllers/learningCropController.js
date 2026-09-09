@@ -40,6 +40,8 @@ export async function createLearningCrop(req, res) {
     }
 
     const doc = normalizeLearningCrop(body);
+    // Always persist imageUrl explicitly
+    doc.imageUrl = String(body.imageUrl ?? "").trim();
     await ref.set(doc);
     console.log("createLearningCrop", slug, "imageUrl=", doc.imageUrl || "(empty)");
     res.status(201).json({ id: slug, ...doc });
@@ -63,12 +65,37 @@ export async function updateLearningCrop(req, res) {
     }
 
     const doc = normalizeLearningCrop(body);
+    doc.imageUrl = String(body.imageUrl ?? "").trim();
     await ref.set(doc, { merge: true });
+    // Second write so imageUrl cannot be dropped by older deploy quirks
+    await ref.update({ imageUrl: doc.imageUrl });
     console.log("updateLearningCrop", id, "imageUrl=", doc.imageUrl || "(empty)");
     res.json({ id, ...doc });
   } catch (err) {
     console.error("updateLearningCrop", err);
     res.status(500).json({ error: "Failed to update crop" });
+  }
+}
+
+/** Dedicated image-only update — minimal payload, always writes imageUrl */
+export async function updateLearningCropImage(req, res) {
+  try {
+    const { id } = req.params;
+    const imageUrl = String(req.body?.imageUrl ?? "").trim();
+    if (!imageUrl) {
+      return res.status(400).json({ error: "imageUrl is required" });
+    }
+    const ref = col().doc(id);
+    const existing = await ref.get();
+    if (!existing.exists) {
+      return res.status(404).json({ error: "Crop not found" });
+    }
+    await ref.set({ imageUrl }, { merge: true });
+    console.log("updateLearningCropImage", id, imageUrl);
+    res.json({ id, imageUrl });
+  } catch (err) {
+    console.error("updateLearningCropImage", err);
+    res.status(500).json({ error: "Failed to save image URL" });
   }
 }
 

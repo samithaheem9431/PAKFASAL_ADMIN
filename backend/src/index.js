@@ -1,8 +1,10 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import path from "path";
 import "./firebaseAdmin.js";
 import { createSessionMiddleware } from "./config/session.js";
+import { isCloudinaryConfigured } from "./config/cloudinary.js";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
@@ -48,6 +50,9 @@ app.use(createSessionMiddleware());
  */
 app.use(express.json({ limit: "2mb" }));
 
+/** Serve disk-uploaded images (fallback when Cloudinary is not configured) */
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
 /**
  * Health check
  */
@@ -56,7 +61,11 @@ app.get("/", (req, res) => {
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    cloudinary: isCloudinaryConfigured(),
+    version: "crop-image-v2",
+  });
 });
 
 /**
@@ -76,7 +85,7 @@ app.use("/api/article-sections", articleSectionsRoutes);
  */
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ error: "Internal server error" });
+  res.status(500).json({ error: err?.message || "Internal server error" });
 });
 
 /**
@@ -84,4 +93,5 @@ app.use((err, _req, res, _next) => {
  */
 app.listen(PORT, () => {
   console.log(`PakFasal Admin API running on port ${PORT}`);
+  console.log(`Cloudinary configured: ${isCloudinaryConfigured()}`);
 });

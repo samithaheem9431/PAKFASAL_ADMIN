@@ -85,6 +85,7 @@ export function LearningCropForm() {
       setImageUrl(url);
       toast.success("Image uploaded — now click Save");
     } catch (err) {
+      setImageUrl("");
       toast.error(err.message || "Upload failed");
     } finally {
       setUploading(false);
@@ -103,27 +104,39 @@ export function LearningCropForm() {
       return;
     }
 
-    // JSON body — works with current Render API (multipart FormData was empty there)
+    const url = (imageUrl || "").trim();
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
       icon: "agriculture",
       order: Number(data.order),
       showInPests: Boolean(data.showInPests),
-      imageUrl: (imageUrl || "").trim(),
+      imageUrl: url,
     };
 
     setSaving(true);
     try {
+      let cropId = id;
       if (isNew) {
         body.id = slug;
-        await api.post("/api/learning-crops", body);
+        cropId = slug;
+        const created = await api.post("/api/learning-crops", body);
+        if (url && !created.data?.imageUrl) {
+          await api.put(`/api/learning-crops/${cropId}/image`, { imageUrl: url });
+        }
         trackEvent("admin_learning_crop_create", { crop_id: slug });
-        toast.success("Crop created");
+        toast.success(url ? "Crop + image saved" : "Crop created");
       } else {
-        await api.put(`/api/learning-crops/${id}`, body);
+        const updated = await api.put(`/api/learning-crops/${id}`, body);
+        // Dedicated image write — guarantees Firestore gets the URL
+        if (url) {
+          await api.put(`/api/learning-crops/${id}/image`, { imageUrl: url });
+        }
+        if (url && !(updated.data?.imageUrl || url)) {
+          toast.error("Crop saved but image URL may be missing on server");
+        }
         trackEvent("admin_learning_crop_update", { crop_id: id });
-        toast.success("Crop updated");
+        toast.success(url ? "Crop + image saved" : "Crop updated");
       }
       clearCache("learning-crops");
       navigate("/learning/crops");
@@ -233,9 +246,13 @@ export function LearningCropForm() {
               disabled={uploading || saving}
             />
           </label>
-          <p className="mt-1 text-xs text-slate-500">
-            1) Upload image 2) Wait for success toast 3) Click Save
-          </p>
+          {imageUrl ? (
+            <p className="mt-1 break-all text-xs text-green-700">URL ready: {imageUrl}</p>
+          ) : (
+            <p className="mt-1 text-xs text-slate-500">
+              Upload first (wait for success), then Save — URL must appear above before Save.
+            </p>
+          )}
         </div>
 
         <label className="flex items-center gap-2 text-sm">
