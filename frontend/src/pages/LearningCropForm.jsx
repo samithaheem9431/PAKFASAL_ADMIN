@@ -7,6 +7,7 @@ import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
 import { LEARNING_ICONS } from "../constants/learningIcons.js";
+import { clearCache } from "../utils/offlineCache.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
@@ -119,6 +120,7 @@ export function LearningCropForm() {
         trackEvent("admin_learning_crop_update", { crop_id: id });
         toast.success("Crop updated");
       }
+      clearCache("learning-crops");
       navigate("/learning/crops");
     } catch (e) {
       const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;

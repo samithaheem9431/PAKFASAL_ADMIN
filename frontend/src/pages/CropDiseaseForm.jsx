@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
-import { fetchWithCache } from "../utils/offlineCache.js";
+import { clearCache, fetchWithCache } from "../utils/offlineCache.js";
 
 const CROPS_CACHE_KEY = "learning-crops";
 
@@ -166,6 +166,7 @@ export function CropDiseaseForm() {
         trackEvent("admin_crop_disease_update", { disease_id: id });
         toast.success("Updated");
       }
+      clearCache("crop-diseases");
       navigate("/learning/diseases");
     } catch (e) {
       const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;

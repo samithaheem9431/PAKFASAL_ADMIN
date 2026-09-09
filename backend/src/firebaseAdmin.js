@@ -71,7 +71,11 @@ if (!admin.apps.length) {
 
   admin.initializeApp({
     credential: admin.credential.cert(credentialJson),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || undefined,
+    storageBucket:
+      process.env.FIREBASE_STORAGE_BUCKET ||
+      (credentialJson.project_id
+        ? `${credentialJson.project_id}.appspot.com`
+        : undefined),
   });
 }
 

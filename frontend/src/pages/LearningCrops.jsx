@@ -5,7 +5,11 @@ import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
-import { fetchWithCache, formatCacheTimestamp } from "../utils/offlineCache.js";
+import {
+  clearCache,
+  fetchWithCache,
+  formatCacheTimestamp,
+} from "../utils/offlineCache.js";
 
 const CACHE_KEY = "learning-crops";
 
@@ -44,6 +48,7 @@ export function LearningCrops() {
     try {
       await api.delete(`/api/learning-crops/${id}`);
       trackEvent("admin_learning_crop_delete", { crop_id: id });
+      clearCache(CACHE_KEY);
       toast.success("Crop deleted");
       load();
     } catch (e) {
