@@ -4,9 +4,32 @@ import {
   validateLearningCrop,
   normalizeLearningCrop,
 } from "../utils/validation.js";
+import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
 
 const db = () => admin.firestore();
 const col = () => db().collection("learning_crops");
+
+/** multipart fields arrive as strings — coerce before validate/normalize */
+function coerceCropBody(raw = {}) {
+  const order = Number(raw.order);
+  let showInPests = raw.showInPests;
+  if (typeof showInPests === "string") {
+    showInPests = showInPests === "true" || showInPests === "1";
+  }
+  return {
+    ...raw,
+    order,
+    showInPests: Boolean(showInPests),
+    imageUrl: String(raw.imageUrl ?? "").trim(),
+  };
+}
+
+async function resolveImageUrl(body, file) {
+  if (file) {
+    return uploadBufferToCloudinary(file);
+  }
+  return String(body.imageUrl ?? "").trim();
+}
 
 export async function listLearningCrops(req, res) {
   try {
@@ -23,7 +46,7 @@ export async function listLearningCrops(req, res) {
 
 export async function createLearningCrop(req, res) {
   try {
-    const body = req.body || {};
+    const body = coerceCropBody(req.body || {});
     const slug = String(body.id ?? "").trim().toLowerCase();
     const slugErr = validateCropSlug(slug);
     if (slugErr) return res.status(400).json({ errors: [slugErr] });
@@ -39,8 +62,19 @@ export async function createLearningCrop(req, res) {
         .json({ errors: ["A crop with this ID already exists"] });
     }
 
-    const doc = normalizeLearningCrop(body);
+    let imageUrl = "";
+    try {
+      imageUrl = await resolveImageUrl(body, req.file);
+    } catch (upErr) {
+      return res.status(400).json({ errors: [upErr.message || "Upload failed"] });
+    }
+
+    const doc = {
+      ...normalizeLearningCrop(body),
+      imageUrl,
+    };
     await ref.set(doc);
+    console.log("createLearningCrop saved", slug, "imageUrl=", imageUrl || "(empty)");
     res.status(201).json({ id: slug, ...doc });
   } catch (err) {
     console.error("createLearningCrop", err);
@@ -51,7 +85,8 @@ export async function createLearningCrop(req, res) {
 export async function updateLearningCrop(req, res) {
   try {
     const { id } = req.params;
-    const errs = validateLearningCrop(req.body || {});
+    const body = coerceCropBody(req.body || {});
+    const errs = validateLearningCrop(body);
     if (errs.length) return res.status(400).json({ errors: errs });
 
     const ref = col().doc(id);
@@ -60,8 +95,24 @@ export async function updateLearningCrop(req, res) {
       return res.status(404).json({ error: "Crop not found" });
     }
 
-    const doc = normalizeLearningCrop(req.body || {});
+    let imageUrl = "";
+    try {
+      imageUrl = await resolveImageUrl(body, req.file);
+    } catch (upErr) {
+      return res.status(400).json({ errors: [upErr.message || "Upload failed"] });
+    }
+
+    // No new file and no imageUrl field in body → keep existing URL
+    if (!req.file && !Object.prototype.hasOwnProperty.call(req.body || {}, "imageUrl")) {
+      imageUrl = String(existing.data()?.imageUrl ?? "").trim();
+    }
+
+    const doc = {
+      ...normalizeLearningCrop(body),
+      imageUrl,
+    };
     await ref.set(doc, { merge: true });
+    console.log("updateLearningCrop saved", id, "imageUrl=", imageUrl || "(empty)");
     res.json({ id, ...doc });
   } catch (err) {
     console.error("updateLearningCrop", err);
