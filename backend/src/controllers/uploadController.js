@@ -1,4 +1,7 @@
-import { cloudinary, isCloudinaryConfigured } from "../config/cloudinary.js";
+import {
+  cloudinary,
+  configureCloudinary,
+} from "../config/cloudinary.js";
 
 const ALLOWED = /^image\/(jpeg|png|gif|webp)$/i;
 
@@ -15,10 +18,10 @@ export async function uploadImage(req, res) {
       return res.status(400).json({ error: "Only JPEG, PNG, GIF, WebP allowed" });
     }
 
-    if (!isCloudinaryConfigured()) {
+    if (!configureCloudinary()) {
       return res.status(503).json({
         error:
-          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET on the API server (Render env), then redeploy.",
       });
     }
 
@@ -37,12 +40,17 @@ export async function uploadImage(req, res) {
       stream.end(req.file.buffer);
     });
 
+    console.log("uploadImage cloudinary ok", result.public_id);
     res.json({
       url: result.secure_url,
       path: result.public_id,
+      host: "cloudinary",
     });
   } catch (err) {
     console.error("uploadImage", err);
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({
+      error: err?.message || "Upload failed",
+      host: "cloudinary",
+    });
   }
 }
