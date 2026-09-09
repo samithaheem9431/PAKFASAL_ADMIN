@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
+import { clearCache } from "../utils/offlineCache.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
@@ -22,19 +23,18 @@ export function LearningCropForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const { register, handleSubmit, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       slug: "",
       nameEn: "",
       nameUr: "",
       order: 0,
       showInPests: true,
-      imageUrl: "",
     },
   });
-
-  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     if (isNew) return;
@@ -55,8 +55,8 @@ export function LearningCropForm() {
           nameUr: c.nameUr ?? "",
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
-          imageUrl: c.imageUrl ?? "",
         });
+        setImageUrl(c.imageUrl ?? "");
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -76,7 +76,8 @@ export function LearningCropForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("imageUrl", url);
+      if (!url) throw new Error("Upload succeeded but no URL returned");
+      setImageUrl(url);
       toast.success("Image uploaded");
     } catch (err) {
       toast.error(err.message || "Upload failed");
@@ -102,8 +103,9 @@ export function LearningCropForm() {
       icon: "agriculture",
       order: Number(data.order),
       showInPests: !!data.showInPests,
-      imageUrl: (data.imageUrl || "").trim(),
+      imageUrl: (imageUrl || "").trim(),
     };
+    setSaving(true);
     try {
       if (isNew) {
         body.id = slug;
@@ -115,10 +117,13 @@ export function LearningCropForm() {
         trackEvent("admin_learning_crop_update", { crop_id: id });
         toast.success("Crop updated");
       }
+      clearCache("learning-crops");
       navigate("/learning/crops");
     } catch (e) {
       const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;
       toast.error(msg || "Save failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -199,7 +204,7 @@ export function LearningCropForm() {
               />
               <button
                 type="button"
-                onClick={() => setValue("imageUrl", "")}
+                onClick={() => setImageUrl("")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×
@@ -214,9 +219,14 @@ export function LearningCropForm() {
               accept="image/*"
               className="hidden"
               onChange={onFile}
-              disabled={uploading}
+              disabled={uploading || saving}
             />
           </label>
+          {imageUrl ? (
+            <p className="mt-1 truncate text-xs text-slate-500" title={imageUrl}>
+              Saved URL ready — click Save to store it
+            </p>
+          ) : null}
         </div>
 
         <label className="flex items-center gap-2 text-sm">
@@ -227,9 +237,10 @@ export function LearningCropForm() {
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
           <button
             type="submit"
-            className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 sm:order-1 sm:w-auto"
+            disabled={saving || uploading}
+            className="order-2 w-full rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60 sm:order-1 sm:w-auto"
           >
-            Save
+            {saving ? "Saving…" : "Save"}
           </button>
           <Link
             to="/learning/crops"
