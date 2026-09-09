@@ -83,6 +83,7 @@ export function LearningCrops() {
           <table className="w-full min-w-[560px] text-left text-xs sm:min-w-[640px] sm:text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Image</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Order</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Slug</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Name (EN)</th>
@@ -95,6 +96,17 @@ export function LearningCrops() {
             <tbody>
               {items.map((c) => (
                 <tr key={c.id} className="border-b border-slate-100">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    {c.imageUrl ? (
+                      <img
+                        src={c.imageUrl}
+                        alt=""
+                        className="h-10 w-10 rounded object-cover"
+                      />
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">{c.order}</td>
                   <td className="px-3 py-2.5 font-mono text-slate-600 sm:px-4 sm:py-3">{c.id}</td>
                   <td className="px-3 py-2.5 font-medium text-slate-900 sm:px-4 sm:py-3">{c.nameEn}</td>
