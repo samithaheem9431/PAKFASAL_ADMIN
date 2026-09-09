@@ -152,6 +152,22 @@ export function resolveLearningIcon(icon, fallback = "article") {
   return fallback;
 }
 
+/** Coerce article payload so string numbers / missing icon never fail validation. */
+export function coerceLearningArticle(body = {}) {
+  return {
+    ...body,
+    categoryEn: body.categoryEn,
+    categoryUr: body.categoryUr,
+    titleEn: body.titleEn,
+    titleUr: body.titleUr,
+    summaryEn: body.summaryEn,
+    summaryUr: body.summaryUr,
+    readTimeMinutes: Number(body.readTimeMinutes),
+    icon: resolveLearningIcon(body.icon),
+    order: Number(body.order),
+  };
+}
+
 export function validateLearningArticle(body) {
   const errors = [];
   if (!hasText(body.categoryEn)) errors.push("Category (English) is required");
@@ -164,24 +180,25 @@ export function validateLearningArticle(body) {
   if (Number.isNaN(readTime) || readTime <= 0) {
     errors.push("Read time (minutes) must be a positive number");
   }
-  // Icon is optional in the request — normalizeLearningArticle always stores a valid one.
-  if (typeof body.order !== "number" || Number.isNaN(body.order)) {
+  const order = Number(body.order);
+  if (Number.isNaN(order)) {
     errors.push("Order must be a number");
   }
   return errors;
 }
 
 export function normalizeLearningArticle(body) {
+  const coerced = coerceLearningArticle(body);
   return {
-    categoryEn: String(body.categoryEn ?? "").trim(),
-    categoryUr: String(body.categoryUr ?? "").trim(),
-    titleEn: String(body.titleEn ?? "").trim(),
-    titleUr: String(body.titleUr ?? "").trim(),
-    summaryEn: String(body.summaryEn ?? "").trim(),
-    summaryUr: String(body.summaryUr ?? "").trim(),
-    readTimeMinutes: Number(body.readTimeMinutes),
-    icon: resolveLearningIcon(body.icon),
-    order: Number(body.order),
+    categoryEn: String(coerced.categoryEn ?? "").trim(),
+    categoryUr: String(coerced.categoryUr ?? "").trim(),
+    titleEn: String(coerced.titleEn ?? "").trim(),
+    titleUr: String(coerced.titleUr ?? "").trim(),
+    summaryEn: String(coerced.summaryEn ?? "").trim(),
+    summaryUr: String(coerced.summaryUr ?? "").trim(),
+    readTimeMinutes: Number(coerced.readTimeMinutes),
+    icon: resolveLearningIcon(coerced.icon),
+    order: Number(coerced.order),
   };
 }
 

@@ -1,5 +1,6 @@
 import admin from "../firebaseAdmin.js";
 import {
+  coerceLearningArticle,
   validateLearningArticle,
   normalizeLearningArticle,
 } from "../utils/validation.js";
@@ -23,9 +24,10 @@ export async function listLearningArticles(req, res) {
 
 export async function createLearningArticle(req, res) {
   try {
-    const errs = validateLearningArticle(req.body || {});
+    const body = coerceLearningArticle(req.body || {});
+    const errs = validateLearningArticle(body);
     if (errs.length) return res.status(400).json({ errors: errs });
-    const doc = normalizeLearningArticle(req.body || {});
+    const doc = normalizeLearningArticle(body);
     const ref = await col().add(doc);
     res.status(201).json({ id: ref.id, ...doc });
   } catch (err) {
@@ -42,9 +44,10 @@ export async function updateLearningArticle(req, res) {
     if (!existing.exists) {
       return res.status(404).json({ error: "Article not found" });
     }
-    const errs = validateLearningArticle(req.body || {});
+    const body = coerceLearningArticle(req.body || {});
+    const errs = validateLearningArticle(body);
     if (errs.length) return res.status(400).json({ errors: errs });
-    const doc = normalizeLearningArticle(req.body || {});
+    const doc = normalizeLearningArticle(body);
     await ref.update(doc);
     res.json({ id, ...doc });
   } catch (err) {

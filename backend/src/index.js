@@ -64,7 +64,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     cloudinary: isCloudinaryConfigured(),
-    version: "crop-image-v4-cloudinary",
+    version: "article-icon-v5",
   });
 });
 
