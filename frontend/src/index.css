@@ -28,3 +28,23 @@ body {
   direction: ltr;
   text-align: right;
 }
+
+/* Road under login tractor Lottie */
+@keyframes tractor-road-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-400px);
+  }
+}
+
+.tractor-road__scroll {
+  animation: tractor-road-scroll 5.5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tractor-road__scroll {
+    animation: none;
+  }
+}
