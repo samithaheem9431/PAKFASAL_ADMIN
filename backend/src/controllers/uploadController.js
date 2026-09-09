@@ -1,8 +1,9 @@
+import { cloudinary, isCloudinaryConfigured } from "../config/cloudinary.js";
+
 const ALLOWED = /^image\/(jpeg|png|gif|webp)$/i;
 
 /**
- * Saves image via multer (disk) and returns a public URL.
- * Free alternative to Firebase Storage (no billing required).
+ * Uploads image buffer to Cloudinary and returns a permanent public URL.
  */
 export async function uploadImage(req, res) {
   try {
@@ -14,13 +15,32 @@ export async function uploadImage(req, res) {
       return res.status(400).json({ error: "Only JPEG, PNG, GIF, WebP allowed" });
     }
 
-    const base = (
-      process.env.PUBLIC_API_URL ||
-      `${req.protocol}://${req.get("host")}`
-    ).replace(/\/$/, "");
+    if (!isCloudinaryConfigured()) {
+      return res.status(503).json({
+        error:
+          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+      });
+    }
 
-    const url = `${base}/uploads/${req.file.filename}`;
-    res.json({ url, path: req.file.filename });
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "pakfasal/admin-uploads",
+          resource_type: "image",
+          overwrite: false,
+        },
+        (err, uploaded) => {
+          if (err) reject(err);
+          else resolve(uploaded);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    res.json({
+      url: result.secure_url,
+      path: result.public_id,
+    });
   } catch (err) {
     console.error("uploadImage", err);
     res.status(500).json({ error: "Upload failed" });
