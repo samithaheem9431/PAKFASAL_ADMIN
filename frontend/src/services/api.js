@@ -13,12 +13,6 @@ const baseURL =
     ? "https://pakfasal-admin.onrender.com"
     : "http://localhost:4000");
 
-/** Public Cloudinary unsigned upload (no server secrets needed) */
-const CLOUDINARY_CLOUD =
-  import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim() || "dur9ih5am";
-const CLOUDINARY_PRESET =
-  import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim() || "pakfasal_admin";
-
 export const api = axios.create({
   baseURL,
   /** Required so HTTP-only session cookie (`pakfasal.sid`) is sent cross-origin */
@@ -73,29 +67,11 @@ api.interceptors.response.use(
   }
 );
 
-/** Direct browser → Cloudinary unsigned upload */
-async function uploadToCloudinaryDirect(file) {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", CLOUDINARY_PRESET);
-  formData.append("folder", "pakfasal/admin-uploads");
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
-    { method: "POST", body: formData }
-  );
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.error?.message || "Cloudinary upload failed");
-  }
-  if (!data.secure_url) {
-    throw new Error("Cloudinary returned no URL");
-  }
-  return { url: data.secure_url, host: "cloudinary-direct" };
-}
-
-/** Fallback: backend /api/upload (Cloudinary or disk) */
-async function uploadViaApi(file) {
+/**
+ * Upload image via backend → Firebase Storage (free quota, durable URL).
+ * Firestore only stores the returned URL string.
+ */
+export async function uploadFile(file) {
   const user = auth.currentUser;
   if (!user) throw new Error("User not authenticated");
 
@@ -118,16 +94,4 @@ async function uploadViaApi(file) {
   }
 
   return response.json();
-}
-
-/**
- * File upload helper — Cloudinary direct first, then API fallback
- */
-export async function uploadFile(file) {
-  try {
-    return await uploadToCloudinaryDirect(file);
-  } catch (directErr) {
-    console.warn("Direct Cloudinary failed, trying API:", directErr?.message);
-    return uploadViaApi(file);
-  }
 }

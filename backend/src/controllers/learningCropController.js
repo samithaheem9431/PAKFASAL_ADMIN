@@ -4,7 +4,7 @@ import {
   validateLearningCrop,
   normalizeLearningCrop,
 } from "../utils/validation.js";
-import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
+import { uploadBufferToFirebaseStorage } from "../utils/firebaseStorageUpload.js";
 
 const db = () => admin.firestore();
 const col = () => db().collection("learning_crops");
@@ -26,7 +26,7 @@ function coerceCropBody(raw = {}) {
 
 async function resolveImageUrl(body, file) {
   if (file) {
-    return uploadBufferToCloudinary(file);
+    return uploadBufferToFirebaseStorage(file);
   }
   return String(body.imageUrl ?? "").trim();
 }

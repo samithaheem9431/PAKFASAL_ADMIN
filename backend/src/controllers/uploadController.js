@@ -1,18 +1,18 @@
-import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
+import { uploadBufferToFirebaseStorage } from "../utils/firebaseStorageUpload.js";
 
 /**
- * Uploads image buffer to Cloudinary and returns a permanent public URL.
+ * Uploads image buffer to Firebase Storage and returns a permanent download URL.
  */
 export async function uploadImage(req, res) {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file" });
     }
-    const url = await uploadBufferToCloudinary(req.file);
-    console.log("uploadImage cloudinary ok", url);
+    const url = await uploadBufferToFirebaseStorage(req.file);
+    console.log("uploadImage firebase storage ok", url);
     res.json({
       url,
-      host: "cloudinary",
+      host: "firebase-storage",
     });
   } catch (err) {
     console.error("uploadImage", err);
@@ -24,7 +24,7 @@ export async function uploadImage(req, res) {
         : 500;
     res.status(status).json({
       error: msg,
-      host: "cloudinary",
+      host: "firebase-storage",
     });
   }
 }

@@ -69,13 +69,14 @@ if (!admin.apps.length) {
     );
   }
 
+  const projectId =
+    credentialJson.project_id || credentialJson.projectId || undefined;
+
   admin.initializeApp({
     credential: admin.credential.cert(credentialJson),
     storageBucket:
-      process.env.FIREBASE_STORAGE_BUCKET ||
-      (credentialJson.project_id
-        ? `${credentialJson.project_id}.appspot.com`
-        : undefined),
+      process.env.FIREBASE_STORAGE_BUCKET?.trim() ||
+      (projectId ? `${projectId}.firebasestorage.app` : undefined),
   });
 }
 

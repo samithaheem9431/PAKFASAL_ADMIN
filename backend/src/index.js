@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "path";
 import "./firebaseAdmin.js";
 import { createSessionMiddleware } from "./config/session.js";
-import { isCloudinaryConfigured } from "./config/cloudinary.js";
+import { isStorageConfigured } from "./utils/firebaseStorageUpload.js";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
@@ -50,7 +50,7 @@ app.use(createSessionMiddleware());
  */
 app.use(express.json({ limit: "2mb" }));
 
-/** Serve disk-uploaded images (fallback when Cloudinary is not configured) */
+/** Legacy local uploads folder (optional; new uploads go to Firebase Storage) */
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 /**
@@ -63,8 +63,8 @@ app.get("/", (req, res) => {
 app.get("/health", (_req, res) => {
   res.json({
     ok: true,
-    cloudinary: isCloudinaryConfigured(),
-    version: "crop-image-v2",
+    firebaseStorage: isStorageConfigured(),
+    version: "crop-image-v3-firebase-storage",
   });
 });
 
@@ -93,5 +93,5 @@ app.use((err, _req, res, _next) => {
  */
 app.listen(PORT, () => {
   console.log(`PakFasal Admin API running on port ${PORT}`);
-  console.log(`Cloudinary configured: ${isCloudinaryConfigured()}`);
+  console.log(`Firebase Storage configured: ${isStorageConfigured()}`);
 });
