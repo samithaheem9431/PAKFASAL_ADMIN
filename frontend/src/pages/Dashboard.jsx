@@ -11,6 +11,8 @@ export function Dashboard() {
     diseases: null,
     articles: null,
   });
+  const [crops, setCrops] = useState([]);
+  const [diseases, setDiseases] = useState([]);
   const [err, setErr] = useState(null);
 
   useEffect(() => {
@@ -24,10 +26,14 @@ export function Dashboard() {
           api.get("/api/learning-articles"),
         ]);
         if (cancel) return;
+        const cropItems = cr.data.items || [];
+        const diseaseItems = d.data.items || [];
+        setCrops(cropItems);
+        setDiseases(diseaseItems);
         setCounts({
           products: p.data.items?.length ?? 0,
-          crops: cr.data.items?.length ?? 0,
-          diseases: d.data.items?.length ?? 0,
+          crops: cropItems.length,
+          diseases: diseaseItems.length,
           articles: a.data.items?.length ?? 0,
         });
       } catch (e) {
@@ -70,6 +76,9 @@ export function Dashboard() {
     },
   ];
 
+  const cropsWithImages = crops.filter((c) => c.imageUrl);
+  const diseasesWithImages = diseases.filter((d) => d.imageUrl);
+
   return (
     <div className="w-full min-w-0 max-w-full">
       <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">Dashboard</h1>
@@ -107,6 +116,101 @@ export function Dashboard() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-8">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-slate-900">Crop images</h2>
+          <Link
+            to="/learning/crops"
+            className="text-sm text-brand-600 hover:underline"
+          >
+            Manage crops
+          </Link>
+        </div>
+        {counts.crops === null ? (
+          <div className="flex justify-center py-8">
+            <Spinner className="h-8 w-8" />
+          </div>
+        ) : crops.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+            No crops yet.
+          </p>
+        ) : cropsWithImages.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+            No crop images yet. Edit a crop, upload an image, then click Save.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {crops.map((c) => (
+              <Link
+                key={c.id}
+                to={`/learning/crops/${c.id}/edit`}
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow-md"
+              >
+                <div className="aspect-square bg-slate-100">
+                  {c.imageUrl ? (
+                    <img
+                      src={c.imageUrl}
+                      alt={c.nameEn || c.id}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-xs text-slate-400">
+                      No image
+                    </div>
+                  )}
+                </div>
+                <div className="px-2 py-2">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {c.nameEn || c.id}
+                  </p>
+                  <p className="truncate text-xs text-slate-500" dir="rtl">
+                    {c.nameUr || ""}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {diseasesWithImages.length > 0 && (
+        <section className="mt-8">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Pest & disease images
+            </h2>
+            <Link
+              to="/learning/diseases"
+              className="text-sm text-brand-600 hover:underline"
+            >
+              Manage
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {diseasesWithImages.slice(0, 10).map((d) => (
+              <Link
+                key={d.id}
+                to={`/learning/diseases/${d.id}/edit`}
+                className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-brand-300 hover:shadow-md"
+              >
+                <div className="aspect-square bg-slate-100">
+                  <img
+                    src={d.imageUrl}
+                    alt={d.nameEn || d.id}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="px-2 py-2">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {d.nameEn || d.id}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

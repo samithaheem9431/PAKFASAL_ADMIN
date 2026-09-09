@@ -1,4 +1,5 @@
 import admin from "../firebaseAdmin.js";
+import { FieldValue } from "firebase-admin/firestore";
 import {
   validateCropSlug,
   validateLearningCrop,
@@ -61,7 +62,16 @@ export async function updateLearningCrop(req, res) {
     }
 
     const doc = normalizeLearningCrop(req.body || {});
-    await ref.set(doc, { merge: true });
+    // Always write imageUrl so list/dashboard can fetch it from Firestore
+    await ref.set(
+      {
+        ...doc,
+        imageUrl: doc.imageUrl || "",
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+    console.log("updateLearningCrop", id, "imageUrl=", doc.imageUrl || "(empty)");
     res.json({ id, ...doc });
   } catch (err) {
     console.error("updateLearningCrop", err);
