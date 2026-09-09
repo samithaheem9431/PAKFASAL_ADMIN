@@ -17,7 +17,6 @@ function validateForm(data) {
   if (!data.summaryUr?.trim()) return "Summary (Urdu) is required.";
   const readTime = Number(data.readTimeMinutes);
   if (Number.isNaN(readTime) || readTime <= 0) return "Read time must be a positive number.";
-  if (!LEARNING_ICONS.includes(data.icon)) return "Please choose a valid icon.";
   if (data.order === "" || Number.isNaN(Number(data.order))) return "Order must be a number.";
 
   for (let i = 0; i < (data.sections?.length ?? 0); i++) {
@@ -107,7 +106,7 @@ export function LearningArticleForm() {
           summaryEn: a.summaryEn ?? "",
           summaryUr: a.summaryUr ?? "",
           readTimeMinutes: a.readTimeMinutes ?? 4,
-          icon: a.icon ?? LEARNING_ICONS[0],
+          icon: LEARNING_ICONS.includes(a.icon) ? a.icon : LEARNING_ICONS[0],
           order: a.order ?? 0,
           sections: sections.map((s) => ({
             _id: s.id,
@@ -145,7 +144,7 @@ export function LearningArticleForm() {
         summaryEn: data.summaryEn.trim(),
         summaryUr: data.summaryUr.trim(),
         readTimeMinutes: Number(data.readTimeMinutes),
-        icon: data.icon,
+        icon: LEARNING_ICONS.includes(data.icon) ? data.icon : LEARNING_ICONS[0],
         order: Number(data.order),
       };
 

@@ -145,6 +145,13 @@ export function normalizeCropDisease(body) {
   };
 }
 
+/** Resolve to a known Material-style icon name; default when missing/invalid. */
+export function resolveLearningIcon(icon, fallback = "article") {
+  const value = String(icon ?? "").trim();
+  if (LEARNING_ICONS.includes(value)) return value;
+  return fallback;
+}
+
 export function validateLearningArticle(body) {
   const errors = [];
   if (!hasText(body.categoryEn)) errors.push("Category (English) is required");
@@ -157,7 +164,7 @@ export function validateLearningArticle(body) {
   if (Number.isNaN(readTime) || readTime <= 0) {
     errors.push("Read time (minutes) must be a positive number");
   }
-  if (!LEARNING_ICONS.includes(body.icon)) errors.push("A valid icon is required");
+  // Icon is optional in the request — normalizeLearningArticle always stores a valid one.
   if (typeof body.order !== "number" || Number.isNaN(body.order)) {
     errors.push("Order must be a number");
   }
@@ -173,7 +180,7 @@ export function normalizeLearningArticle(body) {
     summaryEn: String(body.summaryEn ?? "").trim(),
     summaryUr: String(body.summaryUr ?? "").trim(),
     readTimeMinutes: Number(body.readTimeMinutes),
-    icon: body.icon,
+    icon: resolveLearningIcon(body.icon),
     order: Number(body.order),
   };
 }
