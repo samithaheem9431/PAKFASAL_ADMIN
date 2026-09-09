@@ -93,30 +93,20 @@ body {
   }
 }
 
-@keyframes tractor-blade-sway {
-  0%,
-  100% {
-    transform: rotate(-3deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
-}
-
 @keyframes tractor-shadow-pulse {
   0%,
   100% {
     transform: scaleX(1);
-    opacity: 0.3;
+    opacity: 0.28;
   }
   50% {
     transform: scaleX(1.04);
-    opacity: 0.22;
+    opacity: 0.2;
   }
 }
 
 .tractor-scene__grass-scroll {
-  animation: tractor-grass-scroll 5.5s linear infinite;
+  animation: tractor-grass-scroll 6s linear infinite;
 }
 
 .tractor-scene__rig {
@@ -152,12 +142,6 @@ body {
   animation: tractor-crop-sway 2.2s ease-in-out infinite;
 }
 
-.tractor-scene__blade {
-  transform-box: fill-box;
-  transform-origin: bottom center;
-  animation: tractor-blade-sway 1.6s ease-in-out infinite;
-}
-
 .tractor-scene__shadow {
   transform-box: fill-box;
   transform-origin: center;
@@ -172,7 +156,6 @@ body {
   .tractor-scene__smoke,
   .tractor-scene__clouds,
   .tractor-scene__crop,
-  .tractor-scene__blade,
   .tractor-scene__shadow {
     animation: none;
   }
