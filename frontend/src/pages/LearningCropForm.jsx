@@ -76,7 +76,7 @@ export function LearningCropForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("imageUrl", url);
+      setValue("imageUrl", url, { shouldDirty: true, shouldValidate: true });
       toast.success("Image uploaded");
     } catch (err) {
       toast.error(err.message || "Upload failed");
@@ -101,7 +101,7 @@ export function LearningCropForm() {
       nameUr: data.nameUr.trim(),
       order: Number(data.order),
       showInPests: !!data.showInPests,
-      imageUrl: (data.imageUrl || "").trim(),
+      imageUrl: (imageUrl || data.imageUrl || "").trim(),
     };
     try {
       if (isNew) {
@@ -186,6 +186,8 @@ export function LearningCropForm() {
             {...register("order", { valueAsNumber: true })}
           />
         </div>
+
+        <input type="hidden" {...register("imageUrl")} />
 
         <div>
           <p className="mb-2 text-sm font-medium">Crop image (optional)</p>

@@ -68,11 +68,9 @@ export function validateLearningCrop(body) {
   const errors = [];
   if (!hasText(body.nameEn)) errors.push("Name (English) is required");
   if (!hasText(body.nameUr)) errors.push("Name (Urdu) is required");
-  if (typeof body.order !== "number" || Number.isNaN(body.order)) {
+  const order = Number(body.order);
+  if (Number.isNaN(order)) {
     errors.push("Order must be a number");
-  }
-  if (typeof body.showInPests !== "boolean") {
-    errors.push("showInPests must be true or false");
   }
   return errors;
 }

@@ -128,7 +128,7 @@ export function CropDiseaseForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("imageUrl", url);
+      setValue("imageUrl", url, { shouldDirty: true, shouldValidate: true });
       toast.success("Image uploaded");
     } catch (err) {
       toast.error(err.message || "Upload failed");
@@ -154,7 +154,7 @@ export function CropDiseaseForm() {
       symptomsUr: textToArr(data.symptomsUr),
       solutionsEn: textToArr(data.solutionsEn),
       solutionsUr: textToArr(data.solutionsUr),
-      imageUrl: (data.imageUrl || "").trim(),
+      imageUrl: (imageUrl || data.imageUrl || "").trim(),
     };
     try {
       if (isNew) {
