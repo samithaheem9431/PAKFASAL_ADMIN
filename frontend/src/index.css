@@ -53,10 +53,10 @@ body {
   animation: tractor-road-scroll 5.5s linear infinite;
 }
 
-/* Seat area on typical side-view tractor Lottie */
+/* Seat on tractor’s left side (cab), not off to the far left */
 .tractor-farmer {
-  top: 34%;
-  left: 33%;
+  top: 28%;
+  left: 40%;
   width: 22%;
   max-width: 78px;
   height: auto;
