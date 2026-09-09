@@ -1,18 +1,19 @@
-import { uploadBufferToFirebaseStorage } from "../utils/firebaseStorageUpload.js";
+import { uploadBufferToCloudinary } from "../utils/cloudinaryUpload.js";
 
 /**
- * Uploads image buffer to Firebase Storage and returns a permanent download URL.
+ * Uploads image buffer to Cloudinary and returns a permanent HTTPS URL.
+ * Firestore stores only that URL string (via product / crop / disease forms).
  */
 export async function uploadImage(req, res) {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file" });
     }
-    const url = await uploadBufferToFirebaseStorage(req.file);
-    console.log("uploadImage firebase storage ok", url);
+    const url = await uploadBufferToCloudinary(req.file);
+    console.log("uploadImage cloudinary ok", url);
     res.json({
       url,
-      host: "firebase-storage",
+      host: "cloudinary",
     });
   } catch (err) {
     console.error("uploadImage", err);
@@ -24,7 +25,7 @@ export async function uploadImage(req, res) {
         : 500;
     res.status(status).json({
       error: msg,
-      host: "firebase-storage",
+      host: "cloudinary",
     });
   }
 }

@@ -3,7 +3,7 @@ import multer from "multer";
 import { uploadImage } from "../controllers/uploadController.js";
 import { adminAuth } from "../middleware/adminAuth.js";
 
-/** Memory storage — buffer goes to Firebase Storage (not ephemeral disk) */
+/** Memory storage — buffer goes to Cloudinary (not ephemeral disk) */
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 8 * 1024 * 1024 },

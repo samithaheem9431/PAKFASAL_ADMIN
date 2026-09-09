@@ -6,17 +6,18 @@ Admin web app for PakFasal (marketplace + Learning module). The **Flutter app** 
 
 - Node.js 18+
 - A Firebase project (shared with the mobile app)
-- A service account key with access to Firestore, Auth, and Storage
+- A service account key with access to Firestore and Auth
+- A Cloudinary account (image hosting for admin uploads)
 - For each admin user, a document at `admins/{uid}` with at least: `email`, `role` (e.g. `admin`)
 
 ## Backend
 
 1. Copy `backend/.env.example` to `backend/.env`.
 2. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to the **entire JSON** of the service account (single line), or to a **relative path** to a JSON file (e.g. `serviceAccount.json`) placed under `backend/`.
-3. Set Firebase Storage bucket so admin image uploads persist (free quota):
-   - `FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app`  
-   Enable **Storage** in [Firebase Console](https://console.firebase.google.com/) → Build → Storage.  
-   Uploads go to folder `admin-uploads`; Firestore stores only the download URL.
+3. Set Cloudinary keys so admin image uploads persist:
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`  
+   From [Cloudinary Dashboard](https://cloudinary.com/console) → API Keys.  
+   Uploads go to folder `pakfasal-admin`; Firestore stores only the HTTPS URL.
 4. Run:
 
 ```bash
@@ -52,7 +53,7 @@ Deploy `firestore.rules` in the Firebase console (or with Firebase CLI). The adm
 | GET | `/api/auth/me` | Session / admin check |
 | GET/POST | `/api/products` | List / create products |
 | PUT/DELETE | `/api/products/:id` | Update / soft-delete |
-| POST | `/api/upload` | Image upload to Firebase Storage (multipart `file`) |
+| POST | `/api/upload` | Image upload to Cloudinary via Multer (multipart `file`) |
 | GET/POST/PUT/DELETE | `/api/learning-crops` | Crops for the "Keera aur Bimariyan" module (doc ID = slug) |
 | GET/POST/PUT/DELETE | `/api/crop-diseases` | Pests/diseases per crop (`?cropId=` filter on GET) |
 | GET/POST/PUT/DELETE | `/api/learning-articles` | Learning articles |

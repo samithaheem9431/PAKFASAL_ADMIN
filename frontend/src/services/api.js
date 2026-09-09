@@ -68,7 +68,7 @@ api.interceptors.response.use(
 );
 
 /**
- * Upload image via backend → Firebase Storage (free quota, durable URL).
+ * Upload image via backend → Multer → Cloudinary (durable HTTPS URL).
  * Firestore only stores the returned URL string.
  */
 export async function uploadFile(file) {
