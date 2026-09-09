@@ -25,6 +25,8 @@ export function LearningCropForm() {
   const [uploading, setUploading] = useState(false);
   /** Keep image URL in state — RHF may omit unregistered setValue fields on submit */
   const [imageUrl, setImageUrl] = useState("");
+  /** Kept for API compatibility (form UI no longer shows icon) */
+  const [icon, setIcon] = useState("agriculture");
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -57,6 +59,7 @@ export function LearningCropForm() {
           showInPests: c.showInPests !== false,
         });
         setImageUrl(c.imageUrl ?? "");
+        setIcon(c.icon || "agriculture");
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -100,6 +103,7 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
+      icon: icon || "agriculture",
       order: Number(data.order),
       showInPests: !!data.showInPests,
       imageUrl: (imageUrl || "").trim(),

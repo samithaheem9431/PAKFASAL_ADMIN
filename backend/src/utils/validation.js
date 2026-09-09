@@ -89,6 +89,7 @@ export function normalizeLearningCrop(body) {
     order: Number(body.order) || 0,
     showInPests,
     imageUrl: String(body.imageUrl ?? "").trim(),
+    ...(body.icon ? { icon: String(body.icon).trim() } : {}),
   };
 }
 
