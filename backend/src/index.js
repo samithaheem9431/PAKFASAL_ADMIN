@@ -24,15 +24,20 @@ app.set("trust proxy", 1);
  * ✅ CORS FIX (VERY IMPORTANT)
  * Allows your frontend (Vercel) to talk to backend (Render)
  */
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
 
-      // allow all Vercel domains + localhost
       if (
         origin.includes("vercel.app") ||
-        origin.includes("localhost")
+        origin.includes("localhost") ||
+        allowedOrigins.includes(origin)
       ) {
         return callback(null, true);
       }
@@ -64,7 +69,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     cloudinary: isCloudinaryConfigured(),
-    version: "article-icon-v5",
+    version: "crop-form-v6",
   });
 });
 

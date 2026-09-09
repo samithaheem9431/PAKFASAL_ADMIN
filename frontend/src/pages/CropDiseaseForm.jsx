@@ -311,6 +311,8 @@ export function CropDiseaseForm() {
           </div>
         </div>
 
+        <input type="hidden" {...register("imageUrl")} />
+
         <div>
           <p className="mb-2 text-sm font-medium">Image (optional)</p>
           {imageUrl ? (
