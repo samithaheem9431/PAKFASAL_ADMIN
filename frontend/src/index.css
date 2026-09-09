@@ -39,33 +39,12 @@ body {
   }
 }
 
-@keyframes tractor-farmer-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(2px);
-  }
-}
-
 .tractor-road__scroll {
   animation: tractor-road-scroll 5.5s linear infinite;
 }
 
-/* Seat on tractor’s left side (cab), not off to the far left */
-.tractor-farmer {
-  top: 28%;
-  left: 24%;
-  width: 22%;
-  max-width: 78px;
-  height: auto;
-  animation: tractor-farmer-bounce 0.7s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .tractor-road__scroll,
-  .tractor-farmer {
+  .tractor-road__scroll {
     animation: none;
   }
 }
