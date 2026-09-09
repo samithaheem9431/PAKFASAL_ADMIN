@@ -1,6 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 
-/** Read env at call time so host env / dotenv is always picked up */
+/** Read env at call time so dotenv / host env is always picked up */
 export function isCloudinaryConfigured() {
   return Boolean(
     process.env.CLOUDINARY_CLOUD_NAME?.trim() &&

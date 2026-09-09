@@ -68,28 +68,24 @@ export function validateLearningCrop(body) {
   const errors = [];
   if (!hasText(body.nameEn)) errors.push("Name (English) is required");
   if (!hasText(body.nameUr)) errors.push("Name (Urdu) is required");
-  if (Number.isNaN(Number(body.order))) {
+  if (!LEARNING_ICONS.includes(body.icon)) errors.push("A valid icon is required");
+  if (typeof body.order !== "number" || Number.isNaN(body.order)) {
     errors.push("Order must be a number");
   }
-  if (body.showInPests === undefined || body.showInPests === null) {
+  if (typeof body.showInPests !== "boolean") {
     errors.push("showInPests must be true or false");
   }
   return errors;
 }
 
 export function normalizeLearningCrop(body) {
-  const showInPests =
-    body.showInPests === true ||
-    body.showInPests === "true" ||
-    body.showInPests === 1 ||
-    body.showInPests === "1";
   return {
     nameEn: String(body.nameEn ?? "").trim(),
     nameUr: String(body.nameUr ?? "").trim(),
-    order: Number(body.order) || 0,
-    showInPests,
+    icon: body.icon,
+    order: Number(body.order),
+    showInPests: Boolean(body.showInPests),
     imageUrl: String(body.imageUrl ?? "").trim(),
-    ...(body.icon ? { icon: String(body.icon).trim() } : {}),
   };
 }
 

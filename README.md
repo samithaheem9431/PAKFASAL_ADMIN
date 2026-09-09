@@ -13,7 +13,11 @@ Admin web app for PakFasal (marketplace + Learning module). The **Flutter app** 
 
 1. Copy `backend/.env.example` to `backend/.env`.
 2. Set `FIREBASE_SERVICE_ACCOUNT_KEY` to the **entire JSON** of the service account (single line), or to a **relative path** to a JSON file (e.g. `serviceAccount.json`) placed under `backend/`.
-3. Set Cloudinary credentials for image uploads (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`). Firebase Storage needs Blaze billing; this project currently uses Cloudinary instead.
+3. Set Cloudinary credentials (free tier) so admin image uploads persist across deploys:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`  
+   Get these from [Cloudinary Dashboard](https://cloudinary.com/console) → API Keys. Uploads go to folder `pakfasal/admin-uploads`.
 4. Run:
 
 ```bash
@@ -49,7 +53,7 @@ Deploy `firestore.rules` in the Firebase console (or with Firebase CLI). The adm
 | GET | `/api/auth/me` | Session / admin check |
 | GET/POST | `/api/products` | List / create products |
 | PUT/DELETE | `/api/products/:id` | Update / soft-delete |
-| POST | `/api/upload` | Image upload via Multer → Cloudinary (multipart `file`) |
+| POST | `/api/upload` | Image upload to Cloudinary (multipart `file`) |
 | GET/POST/PUT/DELETE | `/api/learning-crops` | Crops for the "Keera aur Bimariyan" module (doc ID = slug) |
 | GET/POST/PUT/DELETE | `/api/crop-diseases` | Pests/diseases per crop (`?cropId=` filter on GET) |
 | GET/POST/PUT/DELETE | `/api/learning-articles` | Learning articles |

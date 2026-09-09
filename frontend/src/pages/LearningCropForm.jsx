@@ -6,13 +6,14 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
-import { clearCache } from "../utils/offlineCache.js";
+import { LEARNING_ICONS } from "../constants/learningIcons.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
 function validateForm(data) {
   if (!data.nameEn?.trim()) return "Name (English) is required.";
   if (!data.nameUr?.trim()) return "Name (Urdu) is required.";
+  if (!LEARNING_ICONS.includes(data.icon)) return "Please choose a valid icon.";
   if (data.order === "" || Number.isNaN(Number(data.order))) return "Order must be a number.";
   return null;
 }
@@ -23,20 +24,20 @@ export function LearningCropForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
-  /** Keep image URL in state — RHF may omit unregistered setValue fields on submit */
-  const [imageUrl, setImageUrl] = useState("");
-  /** Kept for API compatibility (form UI no longer shows icon) */
-  const [icon, setIcon] = useState("agriculture");
 
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
       slug: "",
       nameEn: "",
       nameUr: "",
+      icon: LEARNING_ICONS[0],
       order: 0,
       showInPests: true,
+      imageUrl: "",
     },
   });
+
+  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     if (isNew) return;
@@ -55,11 +56,11 @@ export function LearningCropForm() {
           slug: c.id,
           nameEn: c.nameEn ?? "",
           nameUr: c.nameUr ?? "",
+          icon: c.icon ?? LEARNING_ICONS[0],
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
+          imageUrl: c.imageUrl ?? "",
         });
-        setImageUrl(c.imageUrl ?? "");
-        setIcon(c.icon || "agriculture");
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -79,9 +80,8 @@ export function LearningCropForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      if (!url) throw new Error("Upload returned no URL");
-      setImageUrl(url);
-      toast.success("Image uploaded — click Save to keep it");
+      setValue("imageUrl", url);
+      toast.success("Image uploaded");
     } catch (err) {
       toast.error(err.message || "Upload failed");
     } finally {
@@ -103,10 +103,10 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
-      icon: icon || "agriculture",
+      icon: data.icon,
       order: Number(data.order),
       showInPests: !!data.showInPests,
-      imageUrl: (imageUrl || "").trim(),
+      imageUrl: (data.imageUrl || "").trim(),
     };
     try {
       if (isNew) {
@@ -119,7 +119,6 @@ export function LearningCropForm() {
         trackEvent("admin_learning_crop_update", { crop_id: id });
         toast.success("Crop updated");
       }
-      clearCache("learning-crops");
       navigate("/learning/crops");
     } catch (e) {
       const msg = e.response?.data?.errors?.join?.(", ") || e.response?.data?.error;
@@ -184,13 +183,28 @@ export function LearningCropForm() {
           </div>
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium">Display order</label>
-          <input
-            type="number"
-            className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            {...register("order", { valueAsNumber: true })}
-          />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Icon</label>
+            <select
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("icon")}
+            >
+              {LEARNING_ICONS.map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Display order</label>
+            <input
+              type="number"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              {...register("order", { valueAsNumber: true })}
+            />
+          </div>
         </div>
 
         <div>
@@ -204,7 +218,7 @@ export function LearningCropForm() {
               />
               <button
                 type="button"
-                onClick={() => setImageUrl("")}
+                onClick={() => setValue("imageUrl", "")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×

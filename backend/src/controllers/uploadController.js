@@ -6,14 +6,11 @@ import {
 const ALLOWED = /^image\/(jpeg|png|gif|webp)$/i;
 
 /**
- * Multer (memory buffer) → Cloudinary permanent URL.
- *
- * Firebase Storage cannot be used on this project until Blaze billing is
- * enabled (bucket create returns: billing account absent/disabled).
+ * Uploads image buffer to Cloudinary and returns a permanent public URL.
  */
 export async function uploadImage(req, res) {
   try {
-    if (!req.file?.buffer) {
+    if (!req.file) {
       return res.status(400).json({ error: "No file" });
     }
     const mimetype = req.file.mimetype || "application/octet-stream";
@@ -24,7 +21,7 @@ export async function uploadImage(req, res) {
     if (!configureCloudinary()) {
       return res.status(503).json({
         error:
-          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.",
+          "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET on the API server (Render env), then redeploy.",
       });
     }
 
@@ -51,6 +48,9 @@ export async function uploadImage(req, res) {
     });
   } catch (err) {
     console.error("uploadImage", err);
-    res.status(500).json({ error: err?.message || "Upload failed" });
+    res.status(500).json({
+      error: err?.message || "Upload failed",
+      host: "cloudinary",
+    });
   }
 }
