@@ -56,7 +56,7 @@ body {
 /* Seat on tractor’s left side (cab), not off to the far left */
 .tractor-farmer {
   top: 28%;
-  left: 30%;
+  left: 24%;
   width: 22%;
   max-width: 78px;
   height: auto;
