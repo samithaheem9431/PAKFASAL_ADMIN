@@ -88,7 +88,6 @@ export function LearningCrops() {
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Slug</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Name (EN)</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Name (UR)</th>
-                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Icon</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">In Pests?</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Actions</th>
               </tr>
@@ -111,7 +110,6 @@ export function LearningCrops() {
                   <td className="px-3 py-2.5 font-mono text-slate-600 sm:px-4 sm:py-3">{c.id}</td>
                   <td className="px-3 py-2.5 font-medium text-slate-900 sm:px-4 sm:py-3">{c.nameEn}</td>
                   <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3" dir="rtl">{c.nameUr}</td>
-                  <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">{c.icon}</td>
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                     <span
                       className={

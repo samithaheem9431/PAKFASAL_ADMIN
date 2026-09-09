@@ -68,7 +68,6 @@ export function validateLearningCrop(body) {
   const errors = [];
   if (!hasText(body.nameEn)) errors.push("Name (English) is required");
   if (!hasText(body.nameUr)) errors.push("Name (Urdu) is required");
-  if (!LEARNING_ICONS.includes(body.icon)) errors.push("A valid icon is required");
   if (typeof body.order !== "number" || Number.isNaN(body.order)) {
     errors.push("Order must be a number");
   }
@@ -79,14 +78,17 @@ export function validateLearningCrop(body) {
 }
 
 export function normalizeLearningCrop(body) {
-  return {
+  const doc = {
     nameEn: String(body.nameEn ?? "").trim(),
     nameUr: String(body.nameUr ?? "").trim(),
-    icon: body.icon,
     order: Number(body.order),
     showInPests: Boolean(body.showInPests),
     imageUrl: String(body.imageUrl ?? "").trim(),
   };
+  if (typeof body.icon === "string" && LEARNING_ICONS.includes(body.icon)) {
+    doc.icon = body.icon;
+  }
+  return doc;
 }
 
 function toStringArray(v) {

@@ -6,14 +6,12 @@ import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
-import { LEARNING_ICONS } from "../constants/learningIcons.js";
 
 const SLUG_RE = /^[a-z0-9_-]+$/;
 
 function validateForm(data) {
   if (!data.nameEn?.trim()) return "Name (English) is required.";
   if (!data.nameUr?.trim()) return "Name (Urdu) is required.";
-  if (!LEARNING_ICONS.includes(data.icon)) return "Please choose a valid icon.";
   if (data.order === "" || Number.isNaN(Number(data.order))) return "Order must be a number.";
   return null;
 }
@@ -30,7 +28,6 @@ export function LearningCropForm() {
       slug: "",
       nameEn: "",
       nameUr: "",
-      icon: LEARNING_ICONS[0],
       order: 0,
       showInPests: true,
       imageUrl: "",
@@ -56,7 +53,6 @@ export function LearningCropForm() {
           slug: c.id,
           nameEn: c.nameEn ?? "",
           nameUr: c.nameUr ?? "",
-          icon: c.icon ?? LEARNING_ICONS[0],
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
           imageUrl: c.imageUrl ?? "",
@@ -103,7 +99,6 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
-      icon: data.icon,
       order: Number(data.order),
       showInPests: !!data.showInPests,
       imageUrl: (data.imageUrl || "").trim(),
@@ -183,28 +178,13 @@ export function LearningCropForm() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium">Icon</label>
-            <select
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              {...register("icon")}
-            >
-              {LEARNING_ICONS.map((i) => (
-                <option key={i} value={i}>
-                  {i}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Display order</label>
-            <input
-              type="number"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              {...register("order", { valueAsNumber: true })}
-            />
-          </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Display order</label>
+          <input
+            type="number"
+            className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            {...register("order", { valueAsNumber: true })}
+          />
         </div>
 
         <div>
