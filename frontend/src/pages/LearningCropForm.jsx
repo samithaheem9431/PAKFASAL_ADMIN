@@ -25,8 +25,10 @@ export function LearningCropForm() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
+  /** Keep image URL in state — RHF may omit unregistered setValue fields on submit */
+  const [imageUrl, setImageUrl] = useState("");
 
-  const { register, handleSubmit, reset, watch, setValue } = useForm({
+  const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       slug: "",
       nameEn: "",
@@ -34,11 +36,8 @@ export function LearningCropForm() {
       icon: LEARNING_ICONS[0],
       order: 0,
       showInPests: true,
-      imageUrl: "",
     },
   });
-
-  const imageUrl = watch("imageUrl") || "";
 
   useEffect(() => {
     if (isNew) return;
@@ -60,8 +59,8 @@ export function LearningCropForm() {
           icon: c.icon ?? LEARNING_ICONS[0],
           order: c.order ?? 0,
           showInPests: c.showInPests !== false,
-          imageUrl: c.imageUrl ?? "",
         });
+        setImageUrl(c.imageUrl ?? "");
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/learning/crops");
@@ -81,8 +80,9 @@ export function LearningCropForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("imageUrl", url);
-      toast.success("Image uploaded");
+      if (!url) throw new Error("Upload returned no URL");
+      setImageUrl(url);
+      toast.success("Image uploaded — click Save to keep it");
     } catch (err) {
       toast.error(err.message || "Upload failed");
     } finally {
@@ -107,7 +107,7 @@ export function LearningCropForm() {
       icon: data.icon,
       order: Number(data.order),
       showInPests: !!data.showInPests,
-      imageUrl: (data.imageUrl || "").trim(),
+      imageUrl: (imageUrl || "").trim(),
     };
     try {
       if (isNew) {
@@ -220,7 +220,7 @@ export function LearningCropForm() {
               />
               <button
                 type="button"
-                onClick={() => setValue("imageUrl", "")}
+                onClick={() => setImageUrl("")}
                 className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs text-white"
               >
                 ×

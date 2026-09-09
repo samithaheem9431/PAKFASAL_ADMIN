@@ -61,7 +61,7 @@ export async function updateLearningCrop(req, res) {
     }
 
     const doc = normalizeLearningCrop(req.body || {});
-    await ref.update(doc);
+    await ref.set(doc, { merge: true });
     res.json({ id, ...doc });
   } catch (err) {
     console.error("updateLearningCrop", err);
