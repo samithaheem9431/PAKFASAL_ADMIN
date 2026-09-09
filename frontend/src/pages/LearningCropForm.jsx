@@ -99,6 +99,7 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
+      icon: "agriculture",
       order: Number(data.order),
       showInPests: !!data.showInPests,
       imageUrl: (data.imageUrl || "").trim(),
