@@ -69,7 +69,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     cloudinary: isCloudinaryConfigured(),
-    version: "crop-form-v6",
+    version: "crop-form-v7",
   });
 });
 

@@ -76,17 +76,17 @@ export function validateLearningCrop(body) {
 }
 
 export function normalizeLearningCrop(body) {
-  const doc = {
+  return {
     nameEn: String(body.nameEn ?? "").trim(),
     nameUr: String(body.nameUr ?? "").trim(),
+    // Icon dropdown was removed from the admin form in favour of crop images.
+    // Always persist a valid Material icon key so older app builds / validators
+    // never reject the document for a missing icon.
+    icon: resolveLearningIcon(body.icon, "eco"),
     order: Number(body.order),
     showInPests: Boolean(body.showInPests),
     imageUrl: String(body.imageUrl ?? "").trim(),
   };
-  if (typeof body.icon === "string" && LEARNING_ICONS.includes(body.icon)) {
-    doc.icon = body.icon;
-  }
-  return doc;
 }
 
 function toStringArray(v) {

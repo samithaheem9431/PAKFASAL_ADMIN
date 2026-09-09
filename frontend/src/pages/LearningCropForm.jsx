@@ -99,6 +99,8 @@ export function LearningCropForm() {
     const body = {
       nameEn: data.nameEn.trim(),
       nameUr: data.nameUr.trim(),
+      // Backend defaults this; send explicitly so old deployed APIs also accept.
+      icon: "eco",
       order: Number(data.order),
       showInPests: !!data.showInPests,
       imageUrl: (imageUrl || data.imageUrl || "").trim(),
