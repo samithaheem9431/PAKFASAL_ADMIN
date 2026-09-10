@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext.jsx";
@@ -7,7 +7,26 @@ import { useAuth } from "./context/AuthContext.jsx";
 import { Layout } from "./components/Layout.jsx";
 import { SuperAdminRoute } from "./routes/SuperAdminRoute.jsx";
 import { Spinner } from "./components/Spinner.jsx";
+import { SplashScreen } from "./components/SplashScreen.jsx";
 import { trackEvent } from "./services/analytics.js";
+
+const SPLASH_SESSION_KEY = "pakfasal_splash_seen";
+
+function shouldShowSplash() {
+  try {
+    return sessionStorage.getItem(SPLASH_SESSION_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+function markSplashSeen() {
+  try {
+    sessionStorage.setItem(SPLASH_SESSION_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
 
 const Login = lazy(() =>
   import("./pages/Login.jsx").then((m) => ({ default: m.Login }))
@@ -55,9 +74,17 @@ function LoginRouteFallback() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(shouldShowSplash);
+
+  const handleSplashFinish = useCallback(() => {
+    markSplashSeen();
+    setShowSplash(false);
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
+        {showSplash ? <SplashScreen onFinish={handleSplashFinish} /> : null}
         <Toaster
           position="top-center"
           toastOptions={{

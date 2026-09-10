@@ -48,3 +48,137 @@ body {
     animation: none;
   }
 }
+
+/* —— PakFasal splash / intro —— */
+@keyframes splash-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes splash-logo-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.55) rotate(-8deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.08) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes splash-bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes splash-orb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(18px, -22px) scale(1.08);
+  }
+}
+
+@keyframes splash-exit {
+  to {
+    opacity: 0;
+    transform: scale(1.03);
+    visibility: hidden;
+  }
+}
+
+.splash-screen {
+  animation: splash-fade-in 0.55s ease-out both;
+}
+
+.splash-screen--exit {
+  animation: splash-exit 0.45s ease-in forwards;
+  pointer-events: none;
+}
+
+.splash-logo-wrap {
+  animation: splash-logo-pop 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.splash-title {
+  animation: splash-fade-in 0.65s ease-out 0.25s both;
+}
+
+.splash-tagline {
+  animation: splash-fade-in 0.65s ease-out 0.45s both;
+}
+
+.splash-bar__fill {
+  transform-origin: left center;
+  animation: splash-bar-fill 3.4s cubic-bezier(0.4, 0, 0.2, 1) 0.35s both;
+}
+
+.splash-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(48px);
+  opacity: 0.45;
+  animation: splash-orb-drift 7s ease-in-out infinite;
+}
+
+.splash-orb--a {
+  top: -10%;
+  left: -8%;
+  width: 18rem;
+  height: 18rem;
+  background: rgb(16 185 129 / 0.55);
+}
+
+.splash-orb--b {
+  right: -12%;
+  top: 20%;
+  width: 16rem;
+  height: 16rem;
+  background: rgb(45 212 191 / 0.4);
+  animation-delay: 1.2s;
+}
+
+.splash-orb--c {
+  bottom: -8%;
+  left: 30%;
+  width: 14rem;
+  height: 14rem;
+  background: rgb(52 211 153 / 0.35);
+  animation-delay: 2.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-logo-wrap,
+  .splash-title,
+  .splash-tagline,
+  .splash-bar__fill,
+  .splash-orb {
+    animation: none !important;
+  }
+
+  .splash-screen--exit {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .splash-bar__fill {
+    transform: scaleX(1);
+  }
+}
