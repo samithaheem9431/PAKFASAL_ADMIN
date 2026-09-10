@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { api, uploadFile } from "../services/api.js";
 import toast from "react-hot-toast";
 import { Spinner } from "../components/Spinner.jsx";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
 
 function validateBilingual(data) {
@@ -35,10 +35,12 @@ export function ProductForm() {
       sku: "",
       isActive: true,
       images: [],
+      phones: [""],
     },
   });
 
   const images = watch("images") || [];
+  const phones = watch("phones") || [""];
 
   useEffect(() => {
     if (isNew) return;
@@ -65,6 +67,7 @@ export function ProductForm() {
           sku: p.sku ?? "",
           isActive: p.isActive !== false,
           images: p.images ?? [],
+          phones: Array.isArray(p.phones) && p.phones.length ? p.phones : [""],
         });
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
@@ -101,6 +104,27 @@ export function ProductForm() {
     );
   };
 
+  const addPhone = () => {
+    setValue("phones", [...phones, ""]);
+  };
+
+  const updatePhone = (index, value) => {
+    const next = [...phones];
+    next[index] = value;
+    setValue("phones", next);
+  };
+
+  const removePhone = (index) => {
+    if (phones.length <= 1) {
+      setValue("phones", [""]);
+      return;
+    }
+    setValue(
+      "phones",
+      phones.filter((_, i) => i !== index)
+    );
+  };
+
   const onSubmit = async (data) => {
     const v = validateBilingual(data);
     if (v) {
@@ -119,6 +143,9 @@ export function ProductForm() {
       sku: data.sku?.trim() || "",
       isActive: !!data.isActive,
       images,
+      phones: (data.phones || [])
+        .map((p) => String(p).trim())
+        .filter(Boolean),
     };
     try {
       if (isNew) {
@@ -229,6 +256,42 @@ export function ProductForm() {
             className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
             {...register("sku")}
           />
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <label className="block text-sm font-medium">Phone numbers</label>
+            <button
+              type="button"
+              onClick={addPhone}
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add phone
+            </button>
+          </div>
+          <div className="space-y-2">
+            {phones.map((phone, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="e.g. 03001234567"
+                  value={phone}
+                  onChange={(e) => updatePhone(index, e.target.value)}
+                  className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePhone(index)}
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-2.5 text-slate-500 hover:bg-red-50 hover:text-red-600"
+                  aria-label="Remove phone number"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <label className="flex items-center gap-2 text-sm">

@@ -7,6 +7,11 @@ import {
 
 const db = () => admin.firestore();
 
+function normalizePhones(phones) {
+  if (!Array.isArray(phones)) return [];
+  return phones.map((p) => String(p).trim()).filter(Boolean);
+}
+
 export async function listProducts(req, res) {
   try {
     const { search, category, includeDeleted } = req.query;
@@ -26,7 +31,9 @@ export async function listProducts(req, res) {
           (t.ur && t.ur.toLowerCase().includes(q)) ||
           (d.en && d.en.toLowerCase().includes(q)) ||
           (d.ur && d.ur.toLowerCase().includes(q)) ||
-          (p.sku && String(p.sku).toLowerCase().includes(q))
+          (p.sku && String(p.sku).toLowerCase().includes(q)) ||
+          (Array.isArray(p.phones) &&
+            p.phones.some((ph) => String(ph).toLowerCase().includes(q)))
         );
       });
     }
@@ -63,6 +70,7 @@ export async function createProduct(req, res) {
       currency: body.currency === "PKR" ? "PKR" : "PKR",
       category: String(body.category ?? "").trim() || "general",
       images: Array.isArray(body.images) ? body.images : [],
+      phones: normalizePhones(body.phones),
       sku: body.sku != null ? String(body.sku).trim() : "",
       isActive: Boolean(body.isActive),
       isDeleted: false,
@@ -103,6 +111,7 @@ export async function updateProduct(req, res) {
       currency: "PKR",
       category: String(body.category ?? "").trim() || "general",
       images: Array.isArray(body.images) ? body.images : [],
+      phones: normalizePhones(body.phones),
       sku: body.sku != null ? String(body.sku).trim() : "",
       isActive: Boolean(body.isActive),
       updatedAt: FieldValue.serverTimestamp(),
