@@ -93,7 +93,7 @@ function TractorRoad() {
   );
 }
 
-export function TractorLottie({ className = "" }) {
+export function TractorLottie({ className = "", size = "default", showRoad = true }) {
   const sources = useMemo(() => {
     const env = import.meta.env.VITE_HERO_LOTTIE_URL;
     const list = [];
@@ -124,7 +124,9 @@ export function TractorLottie({ className = "" }) {
   };
 
   const lottieClass =
-    "mx-auto h-[210px] w-full max-w-[360px] md:h-[270px] md:max-w-[400px]";
+    size === "splash"
+      ? "mx-auto h-[240px] w-full max-w-[400px] md:h-[300px] md:max-w-[460px]"
+      : "mx-auto h-[210px] w-full max-w-[360px] md:h-[270px] md:max-w-[400px]";
 
   return (
     <div className={`flex flex-col items-center justify-center ${className}`}>
@@ -150,7 +152,7 @@ export function TractorLottie({ className = "" }) {
           aria-hidden
         />
       )}
-      <TractorRoad />
+      {showRoad ? <TractorRoad /> : null}
     </div>
   );
 }
