@@ -1,15 +1,21 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-const TractorLottie = lazy(() =>
-  import("./TractorLottie.jsx").then((m) => ({ default: m.TractorLottie }))
-);
-
-const SPLASH_MS = 5000;
+const SPLASH_MS = 4500;
 const REDUCED_MS = 900;
 
+const PARTICLES = [
+  { left: "8%", top: "18%", delay: "0s", size: 10, depth: "near" },
+  { left: "78%", top: "14%", delay: "0.4s", size: 14, depth: "far" },
+  { left: "16%", top: "72%", delay: "0.8s", size: 12, depth: "mid" },
+  { left: "86%", top: "68%", delay: "1.1s", size: 9, depth: "near" },
+  { left: "48%", top: "10%", delay: "0.2s", size: 8, depth: "far" },
+  { left: "62%", top: "80%", delay: "1.4s", size: 11, depth: "mid" },
+  { left: "28%", top: "42%", delay: "0.6s", size: 7, depth: "far" },
+  { left: "72%", top: "38%", delay: "1.7s", size: 13, depth: "near" },
+];
+
 /**
- * Farm splash: realistic field photo + tractor/farmer work animation.
- * Shown once per browser tab session (~4–5s).
+ * Full-screen PakFasal intro with a CSS 3D scene — once per tab session.
  */
 export function SplashScreen({ onFinish }) {
   const [exiting, setExiting] = useState(false);
@@ -17,7 +23,7 @@ export function SplashScreen({ onFinish }) {
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const total = reduced ? REDUCED_MS : SPLASH_MS;
-    const fadeAt = Math.max(total - 550, total * 0.82);
+    const fadeAt = Math.max(total - 500, total * 0.78);
 
     const fadeTimer = window.setTimeout(() => setExiting(true), fadeAt);
     const doneTimer = window.setTimeout(() => onFinish?.(), total);
@@ -30,65 +36,65 @@ export function SplashScreen({ onFinish }) {
 
   return (
     <div
-      className={`splash-screen fixed inset-0 z-[200] flex flex-col items-center justify-end overflow-hidden sm:justify-center ${
+      className={`splash-screen fixed inset-0 z-[200] flex flex-col items-center justify-center overflow-hidden bg-auth-hero ${
         exiting ? "splash-screen--exit" : ""
       }`}
       role="dialog"
       aria-label="PakFasal"
       aria-busy="true"
     >
-      <div className="splash-farm-bg absolute inset-0" aria-hidden>
-        <img
-          src="/splash/farm-hero.jpg"
-          alt=""
-          className="splash-farm-photo h-full w-full object-cover"
-          draggable={false}
-        />
-        <div className="splash-farm-veil absolute inset-0" />
-        <div className="splash-farm-glow absolute inset-0" />
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        <div className="splash-orb splash-orb--a" />
+        <div className="splash-orb splash-orb--b" />
+        <div className="splash-orb splash-orb--c" />
+        <div className="splash-grid" />
       </div>
 
-      <div className="splash-stage relative z-10 flex w-full max-w-lg flex-col items-center px-5 pb-14 pt-10 text-center sm:pb-10">
-        <div className="splash-farm-stage mb-4 w-full sm:mb-5">
-          <Suspense
-            fallback={
-              <div className="flex h-[240px] items-center justify-center md:h-[300px]">
-                <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              </div>
-            }
-          >
-            <TractorLottie className="splash-tractor" size="splash" />
-          </Suspense>
-        </div>
-
-        <div className="splash-brand-chip mb-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 ring-1 ring-white/25 backdrop-blur-md">
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 32 32"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+      <div className="splash-stage relative z-10 flex flex-col items-center px-6 text-center">
+        {PARTICLES.map((p, i) => (
+          <span
+            key={i}
+            className={`splash-particle splash-particle--${p.depth}`}
+            style={{
+              left: p.left,
+              top: p.top,
+              width: p.size,
+              height: p.size,
+              animationDelay: p.delay,
+            }}
             aria-hidden
-          >
-            <rect width="32" height="32" rx="6" fill="#059669" />
-            <path
-              fill="#fff"
-              d="M8 20c2-6 6-10 8-12 2 2 4 6 4 10 0 4-2 6-4 6s-3-2-3-4c0-1 0-2 1-3-2 2-3 5-3 8v3H8v-8z"
-            />
-          </svg>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/95">
-            Farm to admin
-          </span>
+          />
+        ))}
+
+        <div className="splash-scene mb-7 sm:mb-8">
+          <div className="splash-floor" aria-hidden />
+          <div className="splash-ring" aria-hidden />
+          <div className="splash-logo-card">
+            <div className="splash-logo-shine" aria-hidden />
+            <svg
+              className="splash-logo relative z-[1] h-[52px] w-[52px] sm:h-[64px] sm:w-[64px]"
+              viewBox="0 0 32 32"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden
+            >
+              <path
+                fill="#fff"
+                d="M8 20c2-6 6-10 8-12 2 2 4 6 4 10 0 4-2 6-4 6s-3-2-3-4c0-1 0-2 1-3-2 2-3 5-3 8v3H8v-8z"
+              />
+            </svg>
+          </div>
         </div>
 
-        <h1 className="splash-title font-en text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+        <h1 className="splash-title font-en text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
           PakFasal
         </h1>
-        <p className="splash-tagline mt-2 max-w-sm text-sm font-medium text-emerald-50/95 sm:text-base">
-          Farmer ke khet se — smart farming for Pakistan
+        <p className="splash-tagline mt-2.5 max-w-xs text-sm font-medium text-brand-700/90 sm:text-base">
+          Smart farming for Pakistan
         </p>
 
-        <div className="splash-bar mt-8 h-1.5 w-44 overflow-hidden rounded-full bg-white/20 sm:w-52">
-          <div className="splash-bar__fill h-full rounded-full bg-gradient-to-r from-emerald-300 via-lime-300 to-teal-200" />
+        <div className="splash-bar mt-10 h-1.5 w-40 overflow-hidden rounded-full bg-brand-900/15 sm:w-52">
+          <div className="splash-bar__fill h-full rounded-full bg-gradient-to-r from-brand-600 via-emerald-400 to-teal-500" />
         </div>
       </div>
     </div>
