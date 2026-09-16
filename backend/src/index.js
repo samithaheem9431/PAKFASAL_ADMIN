@@ -70,7 +70,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     cloudinary: isCloudinaryConfigured(),
-    version: "crop-image-v8",
+    version: "govt-schemes-v1",
   });
 });
 

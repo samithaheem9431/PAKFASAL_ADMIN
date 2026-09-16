@@ -18,7 +18,7 @@ export function Dashboard() {
     let cancel = false;
     (async () => {
       try {
-        const [p, cr, d, a, s] = await Promise.all([
+        const results = await Promise.allSettled([
           api.get("/api/products"),
           api.get("/api/learning-crops"),
           api.get("/api/crop-diseases"),
@@ -26,13 +26,21 @@ export function Dashboard() {
           api.get("/api/govt-schemes"),
         ]);
         if (cancel) return;
+        const countOf = (i) =>
+          results[i].status === "fulfilled"
+            ? results[i].value.data.items?.length ?? 0
+            : 0;
         setCounts({
-          products: p.data.items?.length ?? 0,
-          crops: cr.data.items?.length ?? 0,
-          diseases: d.data.items?.length ?? 0,
-          articles: a.data.items?.length ?? 0,
-          schemes: s.data.items?.length ?? 0,
+          products: countOf(0),
+          crops: countOf(1),
+          diseases: countOf(2),
+          articles: countOf(3),
+          schemes: countOf(4),
         });
+        const failed = results.filter((r) => r.status === "rejected").length;
+        if (failed) {
+          setErr(`${failed} stat request(s) failed — try refreshing after backend deploy`);
+        }
       } catch (e) {
         if (!cancel) setErr(e.message);
       }
