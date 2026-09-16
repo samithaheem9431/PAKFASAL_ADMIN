@@ -223,3 +223,110 @@ export function normalizeArticleSection(body) {
     bodyUr: String(body.bodyUr ?? "").trim(),
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Government schemes                                                  */
+/* ------------------------------------------------------------------ */
+
+export const GOVT_SCHEME_STATUSES = ["active", "inactive", "closed"];
+
+export const PAKISTAN_PROVINCES = [
+  "All Pakistan",
+  "Punjab",
+  "Sindh",
+  "Khyber Pakhtunkhwa",
+  "Balochistan",
+  "Gilgit-Baltistan",
+  "Azad Jammu & Kashmir",
+  "Islamabad Capital Territory",
+];
+
+function isValidOptionalUrl(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return true;
+  try {
+    const u = new URL(s);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export function coerceGovtScheme(body = {}) {
+  return {
+    ...body,
+    order: Number(body.order ?? 0),
+    featured: Boolean(body.featured),
+    status: String(body.status ?? "active").trim().toLowerCase(),
+  };
+}
+
+export function validateGovtScheme(body) {
+  const errors = [];
+  if (!hasText(body.titleEn)) errors.push("Scheme title (English) is required");
+  if (!hasText(body.titleUr)) errors.push("Scheme title (Urdu) is required");
+  if (!hasText(body.descriptionEn)) errors.push("Short description (English) is required");
+  if (!hasText(body.descriptionUr)) errors.push("Short description (Urdu) is required");
+  if (!hasText(body.categoryEn)) errors.push("Category (English) is required");
+  if (!hasText(body.categoryUr)) errors.push("Category (Urdu) is required");
+  if (!hasText(body.departmentEn)) errors.push("Department (English) is required");
+  if (!hasText(body.departmentUr)) errors.push("Department (Urdu) is required");
+  if (!hasText(body.province)) errors.push("Province is required");
+  if (!toStringArray(body.eligibilityEn).length) {
+    errors.push("At least one eligibility point (English) is required");
+  }
+  if (!toStringArray(body.eligibilityUr).length) {
+    errors.push("At least one eligibility point (Urdu) is required");
+  }
+  if (!toStringArray(body.benefitsEn).length) {
+    errors.push("At least one benefit (English) is required");
+  }
+  if (!toStringArray(body.benefitsUr).length) {
+    errors.push("At least one benefit (Urdu) is required");
+  }
+  const status = String(body.status ?? "").trim().toLowerCase();
+  if (!GOVT_SCHEME_STATUSES.includes(status)) {
+    errors.push("Status must be active, inactive, or closed");
+  }
+  if (!isValidOptionalUrl(body.applyUrl)) {
+    errors.push("Apply link must be a valid http(s) URL");
+  }
+  if (!isValidOptionalUrl(body.website)) {
+    errors.push("Official website must be a valid http(s) URL");
+  }
+  const order = Number(body.order);
+  if (Number.isNaN(order)) errors.push("Order must be a number");
+  const deadline = String(body.deadline ?? "").trim();
+  if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
+    errors.push("Deadline must be a date (YYYY-MM-DD) or empty");
+  }
+  return errors;
+}
+
+export function normalizeGovtScheme(body) {
+  const coerced = coerceGovtScheme(body);
+  return {
+    titleEn: String(coerced.titleEn ?? "").trim(),
+    titleUr: String(coerced.titleUr ?? "").trim(),
+    descriptionEn: String(coerced.descriptionEn ?? "").trim(),
+    descriptionUr: String(coerced.descriptionUr ?? "").trim(),
+    categoryEn: String(coerced.categoryEn ?? "").trim(),
+    categoryUr: String(coerced.categoryUr ?? "").trim(),
+    departmentEn: String(coerced.departmentEn ?? "").trim(),
+    departmentUr: String(coerced.departmentUr ?? "").trim(),
+    province: String(coerced.province ?? "").trim(),
+    eligibilityEn: toStringArray(coerced.eligibilityEn),
+    eligibilityUr: toStringArray(coerced.eligibilityUr),
+    benefitsEn: toStringArray(coerced.benefitsEn),
+    benefitsUr: toStringArray(coerced.benefitsUr),
+    deadline: String(coerced.deadline ?? "").trim(),
+    status: GOVT_SCHEME_STATUSES.includes(coerced.status)
+      ? coerced.status
+      : "active",
+    applyUrl: String(coerced.applyUrl ?? "").trim(),
+    website: String(coerced.website ?? "").trim(),
+    imageUrl: String(coerced.imageUrl ?? "").trim(),
+    featured: Boolean(coerced.featured),
+    order: Number(coerced.order),
+  };
+}

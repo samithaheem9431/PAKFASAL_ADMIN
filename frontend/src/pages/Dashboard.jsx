@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Package, Sprout, Bug, BookOpen } from "lucide-react";
+import { Package, Sprout, Bug, BookOpen, Landmark } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
@@ -10,6 +10,7 @@ export function Dashboard() {
     crops: null,
     diseases: null,
     articles: null,
+    schemes: null,
   });
   const [err, setErr] = useState(null);
 
@@ -17,11 +18,12 @@ export function Dashboard() {
     let cancel = false;
     (async () => {
       try {
-        const [p, cr, d, a] = await Promise.all([
+        const [p, cr, d, a, s] = await Promise.all([
           api.get("/api/products"),
           api.get("/api/learning-crops"),
           api.get("/api/crop-diseases"),
           api.get("/api/learning-articles"),
+          api.get("/api/govt-schemes"),
         ]);
         if (cancel) return;
         setCounts({
@@ -29,6 +31,7 @@ export function Dashboard() {
           crops: cr.data.items?.length ?? 0,
           diseases: d.data.items?.length ?? 0,
           articles: a.data.items?.length ?? 0,
+          schemes: s.data.items?.length ?? 0,
         });
       } catch (e) {
         if (!cancel) setErr(e.message);
@@ -67,6 +70,13 @@ export function Dashboard() {
       sub: "Guides & content",
       count: counts.articles,
       icon: BookOpen,
+    },
+    {
+      to: "/govt-schemes",
+      label: "Govt schemes",
+      sub: "Agricultural schemes & subsidies",
+      count: counts.schemes,
+      icon: Landmark,
     },
   ];
 

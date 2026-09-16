@@ -6,6 +6,7 @@ import {
   Sprout,
   Bug,
   BookOpen,
+  Landmark,
   ShieldCheck,
   LogOut,
   Menu,
@@ -21,6 +22,7 @@ const nav = [
   { to: "/learning/crops", label: "Crops", icon: Sprout },
   { to: "/learning/diseases", label: "Pests & Diseases", icon: Bug },
   { to: "/learning/articles", label: "Learning Articles", icon: BookOpen },
+  { to: "/govt-schemes", label: "Govt Schemes", icon: Landmark },
 ];
 
 function sessionUntilLabel(iso) {

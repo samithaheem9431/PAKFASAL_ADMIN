@@ -14,6 +14,7 @@ import learningCropsRoutes from "./routes/learningCrops.js";
 import cropDiseasesRoutes from "./routes/cropDiseases.js";
 import learningArticlesRoutes from "./routes/learningArticles.js";
 import articleSectionsRoutes from "./routes/articleSections.js";
+import govtSchemesRoutes from "./routes/govtSchemes.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -84,6 +85,7 @@ app.use("/api/learning-crops", learningCropsRoutes);
 app.use("/api/crop-diseases", cropDiseasesRoutes);
 app.use("/api/learning-articles", learningArticlesRoutes);
 app.use("/api/article-sections", articleSectionsRoutes);
+app.use("/api/govt-schemes", govtSchemesRoutes);
 
 /**
  * Error handler

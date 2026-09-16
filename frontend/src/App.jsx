@@ -61,6 +61,12 @@ const LearningArticleForm = lazy(() =>
     default: m.LearningArticleForm,
   }))
 );
+const GovtSchemes = lazy(() =>
+  import("./pages/GovtSchemes.jsx").then((m) => ({ default: m.GovtSchemes }))
+);
+const GovtSchemeForm = lazy(() =>
+  import("./pages/GovtSchemeForm.jsx").then((m) => ({ default: m.GovtSchemeForm }))
+);
 const Admins = lazy(() =>
   import("./pages/Admins.jsx").then((m) => ({ default: m.Admins }))
 );
@@ -126,6 +132,9 @@ export default function App() {
             <Route path="learning/articles" element={<LearningArticles />} />
             <Route path="learning/articles/new" element={<LearningArticleForm />} />
             <Route path="learning/articles/:id/edit" element={<LearningArticleForm />} />
+            <Route path="govt-schemes" element={<GovtSchemes />} />
+            <Route path="govt-schemes/new" element={<GovtSchemeForm />} />
+            <Route path="govt-schemes/:id/edit" element={<GovtSchemeForm />} />
             <Route
               path="admins"
               element={
