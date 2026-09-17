@@ -5,7 +5,7 @@ import { api } from "../services/api.js";
 import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
-import { fetchWithCache, formatCacheTimestamp } from "../utils/offlineCache.js";
+import { clearCache, fetchWithCache, formatCacheTimestamp } from "../utils/offlineCache.js";
 
 const CACHE_KEY = "govt-schemes";
 
@@ -51,6 +51,7 @@ export function GovtSchemes() {
     try {
       await api.delete(`/api/govt-schemes/${id}`);
       trackEvent("admin_govt_scheme_delete", { scheme_id: id });
+      clearCache(CACHE_KEY);
       toast.success("Scheme deleted");
       load();
     } catch (e) {
@@ -87,9 +88,10 @@ export function GovtSchemes() {
             <Spinner className="h-10 w-10" />
           </div>
         ) : (
-          <table className="w-full min-w-[640px] text-left text-xs sm:min-w-[760px] sm:text-sm">
+          <table className="w-full min-w-[700px] text-left text-xs sm:min-w-[820px] sm:text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Image</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Order</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Title</th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">Category</th>
@@ -102,6 +104,17 @@ export function GovtSchemes() {
             <tbody>
               {items.map((s) => (
                 <tr key={s.id} className="border-b border-slate-100">
+                  <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                    {s.imageUrl ? (
+                      <img
+                        src={s.imageUrl}
+                        alt=""
+                        className="h-10 w-10 rounded object-cover"
+                      />
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 sm:px-4 sm:py-3">{s.order}</td>
                   <td className="px-3 py-2.5 font-medium text-slate-900 sm:px-4 sm:py-3">
                     <div>{s.titleEn}</div>
