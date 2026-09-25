@@ -22,6 +22,48 @@ body {
   .mesh-bg__layer {
     @apply absolute rounded-full opacity-[0.65] blur-3xl mix-blend-multiply;
   }
+
+  /* Crop / category fields — dark farm image panel */
+  .product-crop-category-panel {
+    @apply relative overflow-hidden rounded-xl border border-emerald-950/40 p-4 sm:p-5;
+    background-image:
+      linear-gradient(
+        160deg,
+        rgb(2 20 12 / 0.88) 0%,
+        rgb(6 40 28 / 0.82) 45%,
+        rgb(15 23 42 / 0.9) 100%
+      ),
+      url("/splash-farm.jpg");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .product-crop-category-panel label {
+    @apply text-emerald-50;
+  }
+
+  .product-crop-category-panel .hint {
+    @apply text-emerald-100/70;
+  }
+
+  .product-crop-category-field {
+    @apply w-full rounded-lg border border-white/20 bg-black/45 px-3 py-2 text-sm text-white shadow-inner outline-none backdrop-blur-sm placeholder:text-emerald-100/45 focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/40;
+  }
+
+  .product-crop-category-select {
+    @apply appearance-none rounded-lg border border-white/20 px-3 py-2 pr-9 text-sm text-white shadow-inner outline-none focus:border-emerald-400/60 focus:ring-1 focus:ring-emerald-400/40;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a7f3d0'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E"),
+      linear-gradient(rgb(2 20 12 / 0.78), rgb(15 23 42 / 0.85)),
+      url("/splash-farm.jpg");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: right 0.65rem center, center, center;
+    background-size: 1rem, cover, cover;
+  }
+
+  .product-crop-category-select option {
+    @apply bg-slate-900 text-white;
+  }
 }
 
 [dir="rtl"] .font-en {
