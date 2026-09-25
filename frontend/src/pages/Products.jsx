@@ -20,7 +20,7 @@ const PRODUCT_CATEGORIES = [
   { value: "specialty-nutrition", label: "Specialty Nutrition" },
 ];
 
-const CROP_VALUES = new Set(CROPS.map((c) => c.value));
+const LEGACY_CROP_VALUES = new Set(CROPS.map((c) => c.value));
 
 function cropLabel(value) {
   const found = CROPS.find((c) => c.value === value);
@@ -35,15 +35,15 @@ function categoryLabel(value) {
 /** Prefer `crop`; fall back if older docs stored crop in `category`. */
 function productCrop(p) {
   const crop = String(p.crop ?? "").trim();
-  if (crop && CROP_VALUES.has(crop)) return crop;
+  if (crop) return crop;
   const cat = String(p.category ?? "").trim();
-  if (CROP_VALUES.has(cat)) return cat;
+  if (LEGACY_CROP_VALUES.has(cat)) return cat;
   return "";
 }
 
 function productCategory(p) {
   const cat = String(p.category ?? "").trim();
-  if (CROP_VALUES.has(cat) && !p.crop) return "";
+  if (!p.crop && LEGACY_CROP_VALUES.has(cat)) return "";
   return cat;
 }
 
@@ -76,6 +76,15 @@ export function Products() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const crops = useMemo(() => {
+    const s = new Set(CROPS.map((c) => c.value));
+    items.forEach((p) => {
+      const c = productCrop(p);
+      if (c) s.add(c);
+    });
+    return [...s].sort();
+  }, [items]);
 
   const categories = useMemo(() => {
     const s = new Set(PRODUCT_CATEGORIES.map((c) => c.value));
@@ -155,9 +164,9 @@ export function Products() {
           onChange={(e) => setCrop(e.target.value)}
         >
           <option value="">All crops</option>
-          {CROPS.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
+          {crops.map((c) => (
+            <option key={c} value={c}>
+              {cropLabel(c)}
             </option>
           ))}
         </select>

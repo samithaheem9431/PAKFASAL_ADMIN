@@ -1,4 +1,4 @@
-// Seed marketplace products (wheat / rice / cotton) into Firestore.
+// Seed marketplace products into Firestore.
 // Images are uploaded to Cloudinary; only HTTPS URLs are stored in Firestore.
 //
 // Safe to re-run: each product uses a fixed doc ID (`sku` or `id`) via `.set()`.
@@ -35,7 +35,8 @@ const MIME_BY_EXT = {
 
 /**
  * Edit this list when you have real company data + images.
- * crop must be: wheat | rice | cotton
+ * crop / category: any string; common defaults below.
+ * crop e.g.: wheat | rice | cotton | (or a new crop name)
  * category e.g.: fungicides | herbicides | insecticides | seedcare | specialty-nutrition
  */
 const PRODUCTS = [
@@ -131,8 +132,11 @@ async function seed() {
     if (!docId) {
       throw new Error("Each product needs an id or sku for a stable Firestore doc ID");
     }
-    if (!["wheat", "rice", "cotton"].includes(p.crop)) {
-      throw new Error(`Invalid crop for ${docId}: ${p.crop}`);
+    if (!String(p.crop ?? "").trim()) {
+      throw new Error(`Missing crop for ${docId}`);
+    }
+    if (!String(p.category ?? "").trim()) {
+      throw new Error(`Missing category for ${docId}`);
     }
 
     console.log(`→ ${docId} (${p.crop}/${p.category}) — ${p.company}`);

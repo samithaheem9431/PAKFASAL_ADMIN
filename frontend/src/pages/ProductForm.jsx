@@ -21,7 +21,7 @@ const PRODUCT_CATEGORIES = [
   { value: "specialty-nutrition", label: "Specialty Nutrition" },
 ];
 
-const CROP_VALUES = new Set(CROPS.map((c) => c.value));
+const LEGACY_CROP_VALUES = new Set(CROPS.map((c) => c.value));
 
 function validateBilingual(data) {
   const te = data.titleEn?.trim();
@@ -37,16 +37,16 @@ function validateBilingual(data) {
 function resolveCropAndCategory(p) {
   const rawCategory = String(p.category ?? "").trim();
   const rawCrop = String(p.crop ?? "").trim();
-  if (rawCrop && CROP_VALUES.has(rawCrop)) {
+  if (rawCrop) {
     return {
       crop: rawCrop,
-      category: CROP_VALUES.has(rawCategory) ? "" : rawCategory,
+      category: LEGACY_CROP_VALUES.has(rawCategory) ? "" : rawCategory,
     };
   }
-  if (CROP_VALUES.has(rawCategory)) {
+  if (LEGACY_CROP_VALUES.has(rawCategory)) {
     return { crop: rawCategory, category: "" };
   }
-  return { crop: "wheat", category: rawCategory };
+  return { crop: "", category: rawCategory };
 }
 
 export function ProductForm() {
@@ -57,6 +57,10 @@ export function ProductForm() {
   const [uploading, setUploading] = useState(false);
   // Own state — same pattern as LearningCropForm (RHF can drop image URLs).
   const [images, setImages] = useState([]);
+  const [cropSuggestions, setCropSuggestions] = useState(CROPS.map((c) => c.value));
+  const [categorySuggestions, setCategorySuggestions] = useState(
+    PRODUCT_CATEGORIES.map((c) => c.value)
+  );
 
   const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
@@ -65,7 +69,7 @@ export function ProductForm() {
       descEn: "",
       descUr: "",
       price: 0,
-      crop: "wheat",
+      crop: "",
       category: "",
       company: "",
       sku: "",
@@ -77,14 +81,29 @@ export function ProductForm() {
   const phones = watch("phones") || [""];
 
   useEffect(() => {
-    if (isNew) return;
     let cancel = false;
     (async () => {
       try {
         const { data } = await api.get("/api/products", {
-          params: { includeDeleted: "true" },
+          params: { includeDeleted: isNew ? undefined : "true" },
         });
-        const p = data.items?.find((x) => x.id === id);
+        const items = data.items || [];
+
+        const crops = new Set(CROPS.map((c) => c.value));
+        const cats = new Set(PRODUCT_CATEGORIES.map((c) => c.value));
+        items.forEach((p) => {
+          const { crop, category } = resolveCropAndCategory(p);
+          if (crop) crops.add(crop);
+          if (category) cats.add(category);
+        });
+        if (!cancel) {
+          setCropSuggestions([...crops].sort());
+          setCategorySuggestions([...cats].sort());
+        }
+
+        if (isNew) return;
+
+        const p = items.find((x) => x.id === id);
         if (!p) {
           toast.error("Product not found");
           navigate("/products");
@@ -111,8 +130,10 @@ export function ProductForm() {
             : []
         );
       } catch (e) {
-        toast.error(e.response?.data?.error || "Failed to load");
-        navigate("/products");
+        if (!isNew) {
+          toast.error(e.response?.data?.error || "Failed to load");
+          navigate("/products");
+        }
       } finally {
         if (!cancel) setLoading(false);
       }
@@ -172,11 +193,11 @@ export function ProductForm() {
       return;
     }
     if (!data.crop?.trim()) {
-      toast.error("Select a crop.");
+      toast.error("Enter or pick a crop.");
       return;
     }
     if (!data.category?.trim()) {
-      toast.error("Select a product category.");
+      toast.error("Enter or pick a product category.");
       return;
     }
     const body = {
@@ -187,8 +208,8 @@ export function ProductForm() {
       },
       price: Number(data.price),
       currency: "PKR",
-      crop: data.crop?.trim() || "wheat",
-      category: data.category?.trim() || "general",
+      crop: data.crop.trim(),
+      category: data.category.trim(),
       company: data.company?.trim() || "",
       sku: data.sku?.trim() || "",
       isActive: !!data.isActive,
@@ -300,32 +321,39 @@ export function ProductForm() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Crop</label>
-            <select
+            <input
+              list="product-crop-suggestions"
+              placeholder="e.g. wheat — or type a new crop"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               {...register("crop")}
-            >
-              {CROPS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
+            />
+            <datalist id="product-crop-suggestions">
+              {cropSuggestions.map((c) => (
+                <option key={c} value={c} />
               ))}
-            </select>
+            </datalist>
+            <p className="mt-1 text-xs text-slate-500">
+              Pick from the list or type a new crop name.
+            </p>
           </div>
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium">Category</label>
-          <select
+          <input
+            list="product-category-suggestions"
+            placeholder="e.g. fungicides — or type a new category"
             className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
             {...register("category")}
-          >
-            <option value="">Select category</option>
-            {PRODUCT_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+          />
+          <datalist id="product-category-suggestions">
+            {categorySuggestions.map((c) => (
+              <option key={c} value={c} />
             ))}
-          </select>
+          </datalist>
+          <p className="mt-1 text-xs text-slate-500">
+            Pick from the list or type a new category.
+          </p>
         </div>
 
         <div>

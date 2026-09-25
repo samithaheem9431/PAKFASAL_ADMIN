@@ -12,19 +12,20 @@ function normalizePhones(phones) {
   return phones.map((p) => String(p).trim()).filter(Boolean);
 }
 
-const CROP_VALUES = new Set(["wheat", "rice", "cotton"]);
+const LEGACY_CROP_VALUES = new Set(["wheat", "rice", "cotton"]);
 
 function productCrop(p) {
   const crop = String(p.crop ?? "").trim();
-  if (crop && CROP_VALUES.has(crop)) return crop;
+  if (crop) return crop;
   const cat = String(p.category ?? "").trim();
-  if (CROP_VALUES.has(cat)) return cat;
+  // Older docs stored crop in `category`
+  if (LEGACY_CROP_VALUES.has(cat)) return cat;
   return "";
 }
 
 function productCategory(p) {
   const cat = String(p.category ?? "").trim();
-  if (CROP_VALUES.has(cat) && !p.crop) return "";
+  if (!p.crop && LEGACY_CROP_VALUES.has(cat)) return "";
   return cat;
 }
 
@@ -84,16 +85,20 @@ export async function createProduct(req, res) {
     }
 
     const bi = normalizeBilingual(body);
-    const crop = String(body.crop ?? "").trim().toLowerCase();
-    if (!CROP_VALUES.has(crop)) {
-      return res.status(400).json({ errors: ["Crop must be wheat, rice, or cotton"] });
+    const crop = String(body.crop ?? "").trim();
+    if (!crop) {
+      return res.status(400).json({ errors: ["Crop is required"] });
+    }
+    const category = String(body.category ?? "").trim();
+    if (!category) {
+      return res.status(400).json({ errors: ["Category is required"] });
     }
     const doc = {
       ...bi,
       price,
       currency: body.currency === "PKR" ? "PKR" : "PKR",
       crop,
-      category: String(body.category ?? "").trim() || "general",
+      category,
       company: String(body.company ?? "").trim(),
       images: Array.isArray(body.images) ? body.images : [],
       phones: normalizePhones(body.phones),
@@ -131,16 +136,20 @@ export async function updateProduct(req, res) {
     }
 
     const bi = normalizeBilingual(body);
-    const crop = String(body.crop ?? "").trim().toLowerCase();
-    if (!CROP_VALUES.has(crop)) {
-      return res.status(400).json({ errors: ["Crop must be wheat, rice, or cotton"] });
+    const crop = String(body.crop ?? "").trim();
+    if (!crop) {
+      return res.status(400).json({ errors: ["Crop is required"] });
+    }
+    const category = String(body.category ?? "").trim();
+    if (!category) {
+      return res.status(400).json({ errors: ["Category is required"] });
     }
     const patch = {
       ...bi,
       price,
       currency: "PKR",
       crop,
-      category: String(body.category ?? "").trim() || "general",
+      category,
       company: String(body.company ?? "").trim(),
       images: Array.isArray(body.images) ? body.images : [],
       phones: normalizePhones(body.phones),
