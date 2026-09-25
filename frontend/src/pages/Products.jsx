@@ -6,17 +6,63 @@ import { Spinner } from "../components/Spinner.jsx";
 import toast from "react-hot-toast";
 import { trackEvent } from "../services/analytics.js";
 
+const CROPS = [
+  { value: "wheat", label: "Wheat" },
+  { value: "rice", label: "Rice" },
+  { value: "cotton", label: "Cotton" },
+];
+
+const PRODUCT_CATEGORIES = [
+  { value: "fungicides", label: "Fungicides" },
+  { value: "herbicides", label: "Herbicides" },
+  { value: "insecticides", label: "Insecticides" },
+  { value: "seedcare", label: "Seed Care" },
+  { value: "specialty-nutrition", label: "Specialty Nutrition" },
+];
+
+const CROP_VALUES = new Set(CROPS.map((c) => c.value));
+
+function cropLabel(value) {
+  const found = CROPS.find((c) => c.value === value);
+  return found ? found.label : value || "—";
+}
+
+function categoryLabel(value) {
+  const found = PRODUCT_CATEGORIES.find((c) => c.value === value);
+  return found ? found.label : value || "—";
+}
+
+/** Prefer `crop`; fall back if older docs stored crop in `category`. */
+function productCrop(p) {
+  const crop = String(p.crop ?? "").trim();
+  if (crop && CROP_VALUES.has(crop)) return crop;
+  const cat = String(p.category ?? "").trim();
+  if (CROP_VALUES.has(cat)) return cat;
+  return "";
+}
+
+function productCategory(p) {
+  const cat = String(p.category ?? "").trim();
+  if (CROP_VALUES.has(cat) && !p.crop) return "";
+  return cat;
+}
+
 export function Products() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [crop, setCrop] = useState("");
   const [category, setCategory] = useState("");
 
   const load = async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/api/products", {
-        params: { search: search || undefined, category: category || undefined },
+        params: {
+          search: search || undefined,
+          crop: crop || undefined,
+          category: category || undefined,
+        },
       });
       setItems(data.items || []);
     } catch (e) {
@@ -32,8 +78,11 @@ export function Products() {
   }, []);
 
   const categories = useMemo(() => {
-    const s = new Set();
-    items.forEach((p) => p.category && s.add(p.category));
+    const s = new Set(PRODUCT_CATEGORIES.map((c) => c.value));
+    items.forEach((p) => {
+      const cat = productCategory(p);
+      if (cat) s.add(cat);
+    });
     return [...s].sort();
   }, [items]);
 
@@ -50,14 +99,16 @@ export function Products() {
           (d.en && d.en.toLowerCase().includes(q)) ||
           (d.ur && d.ur.toLowerCase().includes(q)) ||
           (p.sku && String(p.sku).toLowerCase().includes(q)) ||
+          (p.company && String(p.company).toLowerCase().includes(q)) ||
           (Array.isArray(p.phones) &&
             p.phones.some((ph) => String(ph).toLowerCase().includes(q)))
         );
       });
     }
-    if (category) list = list.filter((p) => p.category === category);
+    if (crop) list = list.filter((p) => productCrop(p) === crop);
+    if (category) list = list.filter((p) => productCategory(p) === category);
     return list;
-  }, [items, search, category]);
+  }, [items, search, crop, category]);
 
   const softDelete = async (id) => {
     if (!confirm("Soft-delete this product?")) return;
@@ -92,12 +143,24 @@ export function Products() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
-            placeholder="Search title, description, SKU, phone..."
+            placeholder="Search title, company, SKU, phone..."
             className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-3 text-sm"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <select
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:min-w-[9rem]"
+          value={crop}
+          onChange={(e) => setCrop(e.target.value)}
+        >
+          <option value="">All crops</option>
+          {CROPS.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
         <select
           className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm sm:w-auto sm:min-w-[10rem]"
           value={category}
@@ -106,7 +169,7 @@ export function Products() {
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c} value={c}>
-              {c}
+              {categoryLabel(c)}
             </option>
           ))}
         </select>
@@ -125,11 +188,20 @@ export function Products() {
             <Spinner className="h-10 w-10" />
           </div>
         ) : (
-          <table className="w-full min-w-[640px] text-left text-xs sm:min-w-[720px] sm:text-sm">
+          <table className="w-full min-w-[840px] text-left text-xs sm:min-w-[960px] sm:text-sm">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Image
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
                   Title (EN)
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Company
+                </th>
+                <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
+                  Crop
                 </th>
                 <th className="px-3 py-2.5 font-medium text-slate-700 sm:px-4 sm:py-3">
                   Category
@@ -153,8 +225,22 @@ export function Products() {
                 const phones = Array.isArray(p.phones)
                   ? p.phones.filter(Boolean)
                   : [];
+                const thumb = Array.isArray(p.images)
+                  ? p.images.find((u) => String(u ?? "").trim())
+                  : null;
                 return (
                   <tr key={p.id} className="border-b border-slate-100">
+                    <td className="px-3 py-2.5 sm:px-4 sm:py-3">
+                      {thumb ? (
+                        <img
+                          src={thumb}
+                          alt=""
+                          className="h-10 w-10 rounded object-cover"
+                        />
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5 sm:px-4 sm:py-3">
                       <div className="font-medium text-slate-900">
                         {p.title?.en || "—"}
@@ -166,7 +252,13 @@ export function Products() {
                       )}
                     </td>
                     <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">
-                      {p.category}
+                      {p.company || "—"}
+                    </td>
+                    <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">
+                      {cropLabel(productCrop(p))}
+                    </td>
+                    <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">
+                      {categoryLabel(productCategory(p))}
                     </td>
                     <td className="px-3 py-2.5 text-slate-600 sm:px-4 sm:py-3">
                       {phones.length ? (

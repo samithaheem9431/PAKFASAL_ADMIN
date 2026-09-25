@@ -7,6 +7,22 @@ import { Spinner } from "../components/Spinner.jsx";
 import { ArrowLeft, Plus, Trash2, Upload } from "lucide-react";
 import { trackEvent } from "../services/analytics.js";
 
+const CROPS = [
+  { value: "wheat", label: "Wheat" },
+  { value: "rice", label: "Rice" },
+  { value: "cotton", label: "Cotton" },
+];
+
+const PRODUCT_CATEGORIES = [
+  { value: "fungicides", label: "Fungicides" },
+  { value: "herbicides", label: "Herbicides" },
+  { value: "insecticides", label: "Insecticides" },
+  { value: "seedcare", label: "Seed Care" },
+  { value: "specialty-nutrition", label: "Specialty Nutrition" },
+];
+
+const CROP_VALUES = new Set(CROPS.map((c) => c.value));
+
 function validateBilingual(data) {
   const te = data.titleEn?.trim();
   const tu = data.titleUr?.trim();
@@ -17,12 +33,30 @@ function validateBilingual(data) {
   return null;
 }
 
+/** Older products stored crop in `category`; migrate on load. */
+function resolveCropAndCategory(p) {
+  const rawCategory = String(p.category ?? "").trim();
+  const rawCrop = String(p.crop ?? "").trim();
+  if (rawCrop && CROP_VALUES.has(rawCrop)) {
+    return {
+      crop: rawCrop,
+      category: CROP_VALUES.has(rawCategory) ? "" : rawCategory,
+    };
+  }
+  if (CROP_VALUES.has(rawCategory)) {
+    return { crop: rawCategory, category: "" };
+  }
+  return { crop: "wheat", category: rawCategory };
+}
+
 export function ProductForm() {
   const { id } = useParams();
   const isNew = !id || id === "new";
   const navigate = useNavigate();
   const [loading, setLoading] = useState(!isNew);
   const [uploading, setUploading] = useState(false);
+  // Own state — same pattern as LearningCropForm (RHF can drop image URLs).
+  const [images, setImages] = useState([]);
 
   const { register, handleSubmit, reset, watch, setValue } = useForm({
     defaultValues: {
@@ -31,15 +65,15 @@ export function ProductForm() {
       descEn: "",
       descUr: "",
       price: 0,
+      crop: "wheat",
       category: "",
+      company: "",
       sku: "",
       isActive: true,
-      images: [],
       phones: [""],
     },
   });
 
-  const images = watch("images") || [];
   const phones = watch("phones") || [""];
 
   useEffect(() => {
@@ -57,18 +91,25 @@ export function ProductForm() {
           return;
         }
         if (cancel) return;
+        const { crop, category } = resolveCropAndCategory(p);
         reset({
           titleEn: p.title?.en ?? "",
           titleUr: p.title?.ur ?? "",
           descEn: p.description?.en ?? "",
           descUr: p.description?.ur ?? "",
           price: p.price ?? 0,
-          category: p.category ?? "",
+          crop,
+          category,
+          company: p.company ?? "",
           sku: p.sku ?? "",
           isActive: p.isActive !== false,
-          images: p.images ?? [],
           phones: Array.isArray(p.phones) && p.phones.length ? p.phones : [""],
         });
+        setImages(
+          Array.isArray(p.images)
+            ? p.images.map((u) => String(u ?? "").trim()).filter(Boolean)
+            : []
+        );
       } catch (e) {
         toast.error(e.response?.data?.error || "Failed to load");
         navigate("/products");
@@ -88,7 +129,9 @@ export function ProductForm() {
     setUploading(true);
     try {
       const { url } = await uploadFile(file);
-      setValue("images", [...images, url]);
+      const uploaded = String(url ?? "").trim();
+      if (!uploaded) throw new Error("Upload returned empty URL");
+      setImages((prev) => [...prev, uploaded]);
       toast.success("Image uploaded");
     } catch (err) {
       toast.error(err.message || "Upload failed");
@@ -98,10 +141,7 @@ export function ProductForm() {
   };
 
   const removeImage = (url) => {
-    setValue(
-      "images",
-      images.filter((u) => u !== url)
-    );
+    setImages((prev) => prev.filter((u) => u !== url));
   };
 
   const addPhone = () => {
@@ -131,6 +171,14 @@ export function ProductForm() {
       toast.error(v);
       return;
     }
+    if (!data.crop?.trim()) {
+      toast.error("Select a crop.");
+      return;
+    }
+    if (!data.category?.trim()) {
+      toast.error("Select a product category.");
+      return;
+    }
     const body = {
       title: { en: data.titleEn?.trim() || "", ur: data.titleUr?.trim() || "" },
       description: {
@@ -139,7 +187,9 @@ export function ProductForm() {
       },
       price: Number(data.price),
       currency: "PKR",
+      crop: data.crop?.trim() || "wheat",
       category: data.category?.trim() || "general",
+      company: data.company?.trim() || "",
       sku: data.sku?.trim() || "",
       isActive: !!data.isActive,
       images,
@@ -150,11 +200,18 @@ export function ProductForm() {
     try {
       if (isNew) {
         await api.post("/api/products", body);
-        trackEvent("admin_product_create", { category: body.category });
+        trackEvent("admin_product_create", {
+          crop: body.crop,
+          category: body.category,
+        });
         toast.success("Product created");
       } else {
         await api.put(`/api/products/${id}`, body);
-        trackEvent("admin_product_update", { product_id: id, category: body.category });
+        trackEvent("admin_product_update", {
+          product_id: id,
+          crop: body.crop,
+          category: body.category,
+        });
         toast.success("Product updated");
       }
       navigate("/products");
@@ -242,12 +299,42 @@ export function ProductForm() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Category</label>
-            <input
+            <label className="mb-1 block text-sm font-medium">Crop</label>
+            <select
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              {...register("category")}
-            />
+              {...register("crop")}
+            >
+              {CROPS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">Category</label>
+          <select
+            className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            {...register("category")}
+          >
+            <option value="">Select category</option>
+            {PRODUCT_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium">Company</label>
+          <input
+            placeholder="Company name"
+            className="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            {...register("company")}
+          />
         </div>
 
         <div>
@@ -307,7 +394,7 @@ export function ProductForm() {
                 <img
                   src={url}
                   alt=""
-                  className="h-24 w-24 rounded-lg border object-cover"
+                  className="h-24 w-24 rounded-lg border border-slate-200 object-cover"
                 />
                 <button
                   type="button"
@@ -330,6 +417,15 @@ export function ProductForm() {
               disabled={uploading}
             />
           </label>
+          {images.length > 0 ? (
+            <ul className="mt-2 space-y-1">
+              {images.map((url) => (
+                <li key={url} className="break-all text-xs text-slate-500">
+                  {url}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:gap-3">
